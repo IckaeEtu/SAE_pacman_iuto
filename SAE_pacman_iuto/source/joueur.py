@@ -255,7 +255,9 @@ def maj_duree(joueur):
     Args:
         joueur (dict): le joueur considéré
     """
-    pass
+     for objet in joueur["objets"]:
+        joueur["objets"][objet] = max(0, joueur["objets"][objet] - 1)
+     
 
 # A NE PAS DEMANDER
 def joueur_2_str(joueur,separateur=";"):
