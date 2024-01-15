@@ -191,7 +191,7 @@ def poser_objet(plateau, objet, pos):
     """
     set_case(plateau,pos,case.poser_objet(get_case(plateau,pos),objet))
 
-def plateau_from_str(la_chaine, complet=True):
+def plateau_from_str(plan, complet=True):
     """Construit un plateau à partir d'une chaine de caractère contenant les informations
         sur le contenu du plateau (voir sujet)
 
@@ -201,7 +201,38 @@ def plateau_from_str(la_chaine, complet=True):
     Returns:
         dict: le plateau correspondant à la chaine. None si l'opération a échoué
     """
-    pass
+    les_lignes = plan.split("\n")
+    [nb_lignes,nb_colonnes]=les_lignes[0].split(";")
+    nb_lignes = int(nb_lignes)
+    nb_colonnes = int(nb_colonnes)
+    plateau_res = {'nb_lignes': nb_lignes, 'nb_colonnes': nb_colonnes, 'le_plateau': []}
+    for lig in range(1,nb_lignes+1):
+        ligne = []
+        for col in range(nb_colonnes):
+            mur = les_lignes[lig][col] == "#"
+            obj = les_lignes[lig][col]
+            if obj == " ":
+                obj = const.AUCUN
+            ligne.append({"mur":mur,"objet":obj,"pacmans_presents": None,"fantomes_presents": None})
+        plateau_res["le_plateau"].append(ligne)
+
+
+    for ind_ligne in range(nb_lignes+1,len(les_lignes)):
+        la_ligne = les_lignes[ind_ligne].split(";")
+        if len(la_ligne) > 1:
+            if la_ligne[0] in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+                if plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"] is None:
+                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"] = set()
+                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"].add(la_ligne[0])
+                else:
+                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"].add(la_ligne[0])
+            else:
+                if plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"] is None:
+                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"] = set()
+                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"].add(la_ligne[0])
+                else:
+                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"].add(la_ligne[0])
+    return plateau_res
 
 def Plateau(plan):
     """Créer un plateau en respectant le plan donné en paramètre.
