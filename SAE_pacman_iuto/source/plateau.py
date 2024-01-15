@@ -47,7 +47,9 @@ def pos_ouest(plateau, pos):
     """
     x = pos[0]
     y = pos[1]
-    return (x-1,y)
+    if y == 0:
+        return (x,get_nb_colonnes(plateau)-1)
+    return (x,y-1)
 
 def pos_est(plateau, pos):
     """retourne la position de la case à l'est de pos
@@ -60,7 +62,9 @@ def pos_est(plateau, pos):
     """
     x = pos[0]
     y = pos[1]
-    return (x+1,y)
+    if y == get_nb_colonnes(plateau)-1:
+        return (x,0)
+    return (x,y+1)
 
 def pos_nord(plateau, pos):
     """retourne la position de la case au nord de pos
@@ -73,7 +77,10 @@ def pos_nord(plateau, pos):
     """
     x = pos[0]
     y = pos[1]
-    return (x,y-1)
+    if x == 0:
+        return (get_nb_lignes(plateau)-1,y)
+    return (x-1,y)
+
 
 def pos_sud(plateau, pos):
     """retourne la position de la case au sud de pos
@@ -86,7 +93,9 @@ def pos_sud(plateau, pos):
     """
     x = pos[0]
     y = pos[1]
-    return (x,y+1)
+    if x == get_nb_lignes(plateau)-1:
+        return (0,y)
+    return (x+1,y)
 
 def pos_arrivee(plateau,pos,direction):
     """ calcule la position d'arrivée si on part de pos et qu'on va dans
@@ -102,17 +111,17 @@ def pos_arrivee(plateau,pos,direction):
     """
     match direction:
         case 'N':
-            if pos_nord(plateau,pos) < 0:
+            if pos_nord(plateau,pos)[0] < 0:
                 return (get_nb_lignes(plateau)-1,pos[1])
         case 'S':
-            if pos_sud(plateau,pos) >= get_nb_lignes:
+            if pos_sud(plateau,pos)[0] >= get_nb_lignes(plateau):
                 return (0,pos[1])
         case 'E':
-            if pos_est(plateau,pos) < 0:
-                return (pos[0],get_nb_colonnes(plateau)-1)
-        case 'O':
-            if pos_ouest(plateau,pos) >= get_nb_colonnes:
+            if pos_est(plateau,pos)[1] >= get_nb_colonnes(plateau):
                 return (pos[0],0)
+        case 'O':
+            if pos_ouest(plateau,pos)[1] < 0:
+                return (pos[0],get_nb_colonnes(plateau)-1)
         case _:
             return None
 
@@ -127,7 +136,50 @@ def get_case(plateau, pos):
     Returns:
         dict: La case qui se situe à la position pos du plateau
     """
-    pass
+    case_plateau=plateau['le_plateau'][pos[0]][pos[1]]
+    mur = case_plateau == "#"
+    ens_pac = None
+    ens_fantome = None
+    if mur:
+        for entity in plateau:
+            if entity.isalpha() and plateau[entity] == pos:
+                if entity in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+                    if ens_pac is None:
+                        ens_pac = set()
+                        ens_pac.add(entity)
+                    else:
+                        ens_pac.add(entity)
+                else:
+                    if ens_fantome is None:
+                        ens_fantome = set()
+                        ens_fantome.add(entity)
+                    else:
+                        ens_fantome.add(entity)
+        return case.Case(mur,const.AUCUN,ens_pac,ens_fantome)
+    
+    else:  
+        if case_plateau == ' ':
+            obj = const.AUCUN
+        else:
+            obj = case_plateau
+        for entity in plateau:
+            if entity.isalpha() and plateau[entity] == pos:
+                if entity in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+                    if ens_pac is None:
+                        ens_pac = set()
+                        ens_pac.add(entity)
+                    else:
+                        ens_pac.add(entity)
+                else:
+                    if ens_fantome is None:
+                        ens_fantome = set()
+                        ens_fantome.add(entity)
+                    else:
+                        ens_fantome.add(entity)
+        return case.Case(mur,obj,ens_pac,ens_fantome)
+
+                
+        
 
 def get_objet(plateau, pos):
     """retourne l'objet qui se trouve à la position pos du plateau
@@ -207,7 +259,6 @@ def Plateau(plan):
 
     for ind_ligne in range(nb_lignes+1,len(les_lignes)):
         la_ligne = les_lignes[ind_ligne].split(";")
-        print(la_ligne)
         if len(la_ligne) > 1:
             plateau_res[la_ligne[0]] = (int(la_ligne[1]),int(la_ligne[2]))
     return plateau_res
@@ -239,7 +290,10 @@ def enlever_pacman(plateau, pacman, pos):
     Returns:
         bool: True si l'opération s'est bien déroulée, False sinon
     """
-    pass
+    if pacman in plateau:
+        del plateau[pacman]
+        return True
+    return False
 
 
 def enlever_fantome(plateau, fantome, pos):
@@ -253,8 +307,10 @@ def enlever_fantome(plateau, fantome, pos):
     Returns:
         bool: True si l'opération s'est bien déroulée, False sinon
     """
-    pass
-
+    if fantome in plateau:
+        del plateau[fantome]
+        return True
+    return False
 
 def prendre_objet(plateau, pos):
     """Prend l'objet qui se trouve en position pos du plateau et retourne l'entier
