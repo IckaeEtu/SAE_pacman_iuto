@@ -350,13 +350,17 @@ def deplacer_pacman(plateau, pacman, pos, direction, passemuraille=False):
         (int,int): une paire (lig,col) indiquant la position d'arrivée du pacman 
                    (None si le pacman n'a pas pu se déplacer)
     """
+    if get_case(plateau,pos)["pacmans_presents"] is None:   #on test si le pacman est là où il faudrait au départ
+        return None
+    
     new_pos = pos_arrivee(plateau,pos,direction)
     case_arrivee = get_case(plateau,new_pos)
-    if (case.est_mur(case_arrivee) and not passemuraille) or  case.get_fantomes != None:
-        return None
-    else:
-        plateau[pacman]=new_pos
+    if (not case.est_mur(case_arrivee)) or (case.est_mur(case_arrivee) and passemuraille):
+        plateau[pacman] = new_pos
         return new_pos
+    else:
+        return None
+
 
 def deplacer_fantome(plateau, fantome, pos, direction):
     """Déplace dans la direction indiquée un fantome se trouvant en position pos
