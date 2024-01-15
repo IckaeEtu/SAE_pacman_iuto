@@ -290,7 +290,7 @@ def enlever_pacman(plateau, pacman, pos):
     Returns:
         bool: True si l'opération s'est bien déroulée, False sinon
     """
-    if pacman in plateau:
+    if pacman in plateau and plateau[pacman]==pos:
         del plateau[pacman]
         return True
     return False
@@ -307,7 +307,7 @@ def enlever_fantome(plateau, fantome, pos):
     Returns:
         bool: True si l'opération s'est bien déroulée, False sinon
     """
-    if fantome in plateau:
+    if fantome in plateau and plateau[fantome]==pos:
         del plateau[fantome]
         return True
     return False
@@ -324,7 +324,7 @@ def prendre_objet(plateau, pos):
         int: l'entier représentant l'objet qui se trouvait sur la case.
         const.AUCUN indique aucun objet
     """
-    pass
+    return case.get_objet(get_case(plateau,pos))
 
         
 def deplacer_pacman(plateau, pacman, pos, direction, passemuraille=False):
@@ -342,7 +342,13 @@ def deplacer_pacman(plateau, pacman, pos, direction, passemuraille=False):
         (int,int): une paire (lig,col) indiquant la position d'arrivée du pacman 
                    (None si le pacman n'a pas pu se déplacer)
     """
-    pass
+    new_pos = pos_arrivee(plateau,pos,direction)
+    case_arrivee = get_case(plateau,pos_arrivee)
+    if (case.est_mur(case_arrivee) and not passemuraille) or  case.get_fantomes != None:
+        return None
+    else:
+        plateau[pacman]=new_pos
+        return new_pos
 
 def deplacer_fantome(plateau, fantome, pos, direction):
     """Déplace dans la direction indiquée un fantome se trouvant en position pos
@@ -358,7 +364,13 @@ def deplacer_fantome(plateau, fantome, pos, direction):
         (int,int): une paire (lig,col) indiquant la position d'arrivée du fantome
                    None si le joueur n'a pas pu se déplacer
     """
-    pass
+    new_pos = pos_arrivee(plateau,pos,direction)
+    case_arrivee = get_case(plateau,pos_arrivee)
+    if case.est_mur(case_arrivee):
+        return None
+    else:
+        plateau[fantome] = pos_arrivee
+        return pos_arrivee
 
 def case_vide(plateau):
     """choisi aléatoirement sur la plateau une case qui n'est pas un mur et qui
@@ -386,7 +398,17 @@ def directions_possibles(plateau,pos,passemuraille=False):
         str: une chaine de caractères indiquant les directions possibles
               à partir de pos
     """
-    pass
+    direct_possible = ""
+    if (case.est_mur(get_case(pos_est(plateau,pos))) and passemuraille) or not case.est_mur(get_case(pos_est(plateau,pos))):
+        direct_possible += "E"
+    if (case.est_mur(get_case(pos_ouest(plateau,pos))) and passemuraille) or not case.est_mur(get_case(pos_ouest(plateau,pos))):  
+        direct_possible += "O"
+    if (case.est_mur(get_case(pos_nord(plateau,pos))) and passemuraille) or not case.est_mur(get_case(pos_nord(plateau,pos))):
+        direct_possible += "N"
+    if (case.est_mur(get_case(pos_sud(plateau,pos))) and passemuraille) or not case.est_mur(get_case(pos_sud(plateau,pos))):
+        direct_possible += "S"
+        
+    return direct_possible
 #---------------------------------------------------------#
 
 
