@@ -236,8 +236,6 @@ def Plateau(plan):
         la_ligne = les_lignes[ind_ligne].split(";")
         if len(la_ligne) > 1:
             if la_ligne[0] in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-                print("_______________________________")
-                print(la_ligne)
                 if plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"] is None:
                     plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"] = set()
                     plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"].add(la_ligne[0])
@@ -333,7 +331,7 @@ def deplacer_pacman(plateau, pacman, pos, direction, passemuraille=False):
         (int,int): une paire (lig,col) indiquant la position d'arrivée du pacman 
                    (None si le pacman n'a pas pu se déplacer)
     """
-    if get_case(plateau,pos)["pacmans_presents"] is None:   #on test si le pacman est là où il faudrait au départ
+    if pacman not in case.get_pacmans(get_case(plateau,pos)) is None:   #on test si le pacman est là où il faudrait au départ
         return None
     
     new_pos = pos_arrivee(plateau,pos,direction)
@@ -360,14 +358,19 @@ def deplacer_fantome(plateau, fantome, pos, direction):
         (int,int): une paire (lig,col) indiquant la position d'arrivée du fantome
                    None si le joueur n'a pas pu se déplacer
     """
+
+    if not fantome in case.get_fantomes(get_case(plateau,pos)):
+        return None
+    
     new_pos = pos_arrivee(plateau,pos,direction)
     case_arrivee = get_case(plateau,new_pos)
-    if case.est_mur(case_arrivee):
-        return None
-    else:
-        plateau[fantome] = new_pos
-        return new_pos
 
+    if (not case.est_mur(case_arrivee)):
+        poser_fantome(plateau,fantome,new_pos)
+        enlever_fantome(plateau,fantome,pos)
+        return new_pos
+    else:
+        return None
 def case_vide(plateau):
     """choisi aléatoirement sur la plateau une case qui n'est pas un mur et qui
        ne contient ni pacman ni fantome ni objet
