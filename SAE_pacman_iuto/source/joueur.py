@@ -125,7 +125,12 @@ def get_objets(joueur):
     Returns:
         list(int): la liste des objets possédés par le joueur
     """
-    pass
+    objets = []
+    for objet, quantite in joueur["objets"].items():
+        if quantite > 0:
+            objets.append(objet)
+    return objets
+
 
 def get_duree(joueur,objet):
     """retourne la duree de vie de l'objet possédé par le joueur
@@ -232,7 +237,15 @@ def ajouter_objet(joueur, objet):
         joueur (dict): le joueur considéré
         objet (int): l'objet considéré
     """
-    pass
+    if objet in const.PROP_OBJET:
+        points, duree = const.PROP_OBJET[objet]
+
+    joueur["nb_points"] += points
+
+    if objet in joueur["objets"]:
+        joueur["objets"][objet] += duree
+    else:
+        joueur["objets"][objet] = duree
 
 
 def maj_duree(joueur):
