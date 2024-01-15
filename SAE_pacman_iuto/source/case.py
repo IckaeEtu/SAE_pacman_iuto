@@ -114,8 +114,10 @@ def poser_objet(case, objet):
         objet (str): identifiant d'objet. const.AUCUN indiquant que plus aucun objet se
                 trouve sur la case.
     """
-    if case['objet']==const.AUCUN and case['mur']==False:
-        case['objet']=objet   
+    
+    if case['mur']==False :
+        case['objet']=objet  
+    case['objet']==' '
 
 def prendre_objet(case):
     """Enlève l'objet qui se trouve sur la case et retourne l'identifiant de cet objet.
@@ -142,8 +144,9 @@ def poser_pacman(case, pacman):
         case (dict): la case considérée
         pacman (str): identifiant du pacman à ajouter sur la case
     """
-    if case['pacmans_presents']!=None and pacman not in case['pacmans_presents']:
-        get_pacmans(case).add(pacman)
+    if case["pacmans_presents"] ==None:
+        case["pacmans_presents"]=set()
+    case["pacmans_presents"].add(pacman)
 
 def prendre_pacman(case, pacman):
     """Enlève le pacman dont l'identifiant est passé en paramètre de la case.
@@ -156,7 +159,11 @@ def prendre_pacman(case, pacman):
     Returns:
         bool: True si le joueur était bien sur la case et False sinon.
     """
-    pass
+    if case["pacmans_presents"]!=None:
+        if pacman in get_pacmans(case):
+            case["pacmans_presents"].remove(pacman)
+            return True          
+    return False
 
 def poser_fantome(case, fantome):
     """Pose un nouveau fantome sur la case
@@ -167,7 +174,10 @@ def poser_fantome(case, fantome):
         case (dict): la case considérée
         fantome (str): identifiant du fantome à ajouter sur la case
     """
-    pass
+    if case["mur"]==False:
+        if case["fantomes_presents"] ==None:
+            case["fantomes_presents"]=set()
+        case["fantomes_presents"].add(fantome)
 
 
 def prendre_fantome(case, fantome):
@@ -181,4 +191,9 @@ def prendre_fantome(case, fantome):
     Returns:
         bool: True si le fantome était bien sur la case et False sinon.
     """
-    pass
+    if case["fantomes_presents"]!=None:
+        if fantome in get_fantomes(case):
+            case["fantomes_presents"].remove(fantome)
+            return True
+    return False
+    
