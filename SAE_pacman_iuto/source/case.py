@@ -23,7 +23,7 @@ def Case(mur=False, objet=const.AUCUN, pacmans_presents=None, fantomes_presents=
     Returns:
         dict: un dictionnaire représentant une case du plateau
     """
-    pass
+    return {'mur':mur,'objet':objet,"pacmans_presents":pacmans_presents,"fantomes_presents":fantomes_presents}
 
 
 def est_mur(case):
@@ -35,7 +35,7 @@ def est_mur(case):
     Returns:
         bool: True si la case est un mur et False sinon
     """
-    pass
+    return case['mur']
 
 
 
@@ -49,7 +49,7 @@ def get_objet(case):
     Returns:
         str: l'identifiant de l'objet qui se trouve sur la case.
     """
-    pass
+    return case['objet']
 
 
 def get_pacmans(case):
@@ -59,9 +59,13 @@ def get_pacmans(case):
         case (dict): la case considérée
 
     Returns:
-        set: l'ensemble des identifiants de pacmans présents su la case.
+        set: l'ensemble des identifiants de pacmans présents sur la case.
     """
-    pass
+    res=set()
+    if case['pacmans_presents']!=None:
+        for pacmans in case['pacmans_presents']:
+            res.add(pacmans)
+    return res
 
 def get_fantomes(case):
     """retourne l'ensemble des fantomes qui sont sur la case
@@ -72,7 +76,11 @@ def get_fantomes(case):
     Returns:
         set: l'ensemble des identifiants de fantomes présents su la case.
     """
-    pass
+    res=set()
+    if case['fantomes_presents']!=None:
+        for pacmans in case['fantomes_presents']:
+            res.add(pacmans)
+    return res
 
 
 def get_nb_pacmans(case):
@@ -84,7 +92,7 @@ def get_nb_pacmans(case):
     Returns:
         int: le nombre de pacmans présents sur la case.
     """
-    pass
+    return len(get_pacmans(case))
 
 def get_nb_fantomes(case):
     """retourne le nombre de fantomes présents sur la case
@@ -95,16 +103,7 @@ def get_nb_fantomes(case):
     Returns:
         int: le nombre de fantomes présents sur la case.
     """
-    pass
-
-def get_objet(case):
-    """retourne l'objet qui est sur la case.
-        Si aucun objet ne s'y trouve la fonction retourne const.AUCUN
-
-    Args:
-        case (dict): la case considérée
-    """
-    pass
+    return len(get_fantomes(case))
 
 def poser_objet(case, objet):
     """Pose un objet sur la case. Si un objet était déjà présent ce dernier disparait.
@@ -115,7 +114,8 @@ def poser_objet(case, objet):
         objet (str): identifiant d'objet. const.AUCUN indiquant que plus aucun objet se
                 trouve sur la case.
     """
-    pass
+    if case['objet']==const.AUCUN and case['mur']==False:
+        case['objet']=objet   
 
 def prendre_objet(case):
     """Enlève l'objet qui se trouve sur la case et retourne l'identifiant de cet objet.
@@ -127,7 +127,11 @@ def prendre_objet(case):
     Returns:
         char: l'identifiant de l'objet qui se trouve sur la case.
     """
-    pass
+    if case['objet']==const.AUCUN:
+        return case['objet']
+    id = case['objet']
+    case['objet']=const.AUCUN
+    return id
 
 def poser_pacman(case, pacman):
     """Pose un nouveau pacman sur la case.
@@ -138,8 +142,8 @@ def poser_pacman(case, pacman):
         case (dict): la case considérée
         pacman (str): identifiant du pacman à ajouter sur la case
     """
-    pass
-
+    if case['pacmans_presents']!=None and pacman not in case['pacmans_presents']:
+        get_pacmans(case).add(pacman)
 
 def prendre_pacman(case, pacman):
     """Enlève le pacman dont l'identifiant est passé en paramètre de la case.
