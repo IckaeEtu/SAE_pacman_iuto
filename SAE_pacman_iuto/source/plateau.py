@@ -402,6 +402,7 @@ def deplacer_fantome(plateau, fantome, pos, direction):
         return new_pos
     else:
         return None
+    
 def case_vide(plateau):
     """choisi aléatoirement sur la plateau une case qui n'est pas un mur et qui
        ne contient ni pacman ni fantome ni objet
@@ -412,7 +413,13 @@ def case_vide(plateau):
     Returns:
         (int,int): la position choisie
     """
-    pass
+    ls_case_vide = []
+    for ligne in range(get_nb_lignes(plateau)):
+        for colonne in range(get_nb_colonnes(plateau)):
+            case_ = get_case(plateau,(ligne,colonne))
+            if case.get_nb_pacmans(case_) == 0 and case.get_nb_fantomes(case_) == 0 and not case.est_mur(case_) and case.get_objet(case_) == ' ':
+                ls_case_vide.append(case_)
+    return random.choice(ls_case_vide)
 
 
 def directions_possibles(plateau,pos,passemuraille=False):
