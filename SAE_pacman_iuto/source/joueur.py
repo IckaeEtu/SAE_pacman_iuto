@@ -47,22 +47,21 @@ def joueur_from_str(description):
     Returns:
         dict: le joueur ayant les caractéristiques décrite dans la chaine.
     """
-    joueur = dict()
-
     carac = description.split(";")
 
-    joueur["couleur"] = carac[0]
-    joueur["nom"] = carac[10]
-    joueur["nb_points"] = int(carac[1])
-    joueur["nb_faux_mvt"] = int(carac[2])
-    joueur["pos_pacman"] = (int(carac[3]), int(carac[4]))
-    joueur["pos_fantome"] = (int(carac[5]), int(carac[6]))
-    
-    o = const.aucun_objet()
-    o[const.GLOUTON] = int(carac[7])
-    o[const.IMMOBILITE] = int(carac[8])
-    o[const.PASSEMURAILLE] = int(carac[9])
-    joueur["objets"] = o
+    joueur = {
+        "couleur": carac[0],
+        "nom": carac[10],
+        "nb_points": int(carac[1]),
+        "nb_faux_mvt": int(carac[2]),
+        "pos_pacman": (int(carac[3]), int(carac[4])),
+        "pos_fantome": (int(carac[5]), int(carac[6])),
+        "objets": {
+            const.GLOUTON: int(carac[7]),
+            const.IMMOBILITE: int(carac[8]),
+            const.PASSEMURAILLE: int(carac[9]),
+        }
+    }
 
     return joueur
             
