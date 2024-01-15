@@ -144,48 +144,7 @@ def get_case(plateau, pos):
     Returns:
         dict: La case qui se situe à la position pos du plateau
     """
-    case_plateau = plateau['le_plateau'][pos[0]][pos[1]]
-    mur = case_plateau == "#"
-    ens_pac = None
-    ens_fantome = None
-    if mur:
-        for entity in plateau:
-            if entity.isalpha() and plateau[entity] == pos:
-                if entity in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-                    if ens_pac is None:
-                        ens_pac = set()
-                        ens_pac.add(entity)
-                    else:
-                        ens_pac.add(entity)
-                else:
-                    if ens_fantome is None:
-                        ens_fantome = set()
-                        ens_fantome.add(entity)
-                    else:
-                        ens_fantome.add(entity)
-        return case.Case(mur,const.AUCUN,ens_pac,ens_fantome)
-    
-    else:  
-        if case_plateau == ' ':
-            obj = const.AUCUN
-        else:
-            obj = case_plateau
-        for entity in plateau:
-            if entity.isalpha() and plateau[entity] == pos:
-                if entity in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-                    if ens_pac is None:
-                        ens_pac = set()
-                        ens_pac.add(entity)
-                    else:
-                        ens_pac.add(entity)
-                else:
-                    if ens_fantome is None:
-                        ens_fantome = set()
-                        ens_fantome.add(entity)
-                    else:
-                        ens_fantome.add(entity)
-        return case.Case(mur,obj,ens_pac,ens_fantome)
-
+    return plateau["le_plateau"][pos[0]][pos[1]]
                 
         
 
@@ -209,7 +168,6 @@ def poser_pacman(plateau, pacman, pos):
         pacman (str): la lettre représentant le pacman
         pos (tuple): une paire (lig,col) de deux int
     """
-    plateau[pacman] = pos
     set_case(plateau,pos,case.poser_pacman(get_case(plateau,pos),pacman))
 
 def poser_fantome(plateau, fantome, pos):
@@ -220,7 +178,6 @@ def poser_fantome(plateau, fantome, pos):
         fantome (str): la lettre représentant le fantome
         pos (tuple): une paire (lig,col) de deux int
     """
-    plateau[fantome] = pos
     set_case(plateau,pos,case.poser_fantome(get_case(plateau,pos),fantome))
 
 def poser_objet(plateau, objet, pos):
@@ -263,12 +220,35 @@ def Plateau(plan):
     [nb_lignes,nb_colonnes]=les_lignes[0].split(";")
     nb_lignes = int(nb_lignes)
     nb_colonnes = int(nb_colonnes)
-    plateau_res = {'nb_lignes': nb_lignes, 'nb_colonnes': nb_colonnes, 'le_plateau': [les_lignes[i] for i in range(1,nb_lignes+1)]}
+    plateau_res = {'nb_lignes': nb_lignes, 'nb_colonnes': nb_colonnes, 'le_plateau': []}
+    for lig in range(1,nb_lignes+1):
+        ligne = []
+        for col in range(nb_colonnes):
+            mur = les_lignes[lig][col] == "#"
+            obj = les_lignes[lig][col]
+            if obj == " ":
+                obj = const.AUCUN
+            ligne.append({"mur":mur,"objet":obj,"pacmans_presents": None,"fantomes_presents": None})
+        plateau_res["le_plateau"].append(ligne)
+
 
     for ind_ligne in range(nb_lignes+1,len(les_lignes)):
         la_ligne = les_lignes[ind_ligne].split(";")
         if len(la_ligne) > 1:
-            plateau_res[la_ligne[0]] = (int(la_ligne[1]),int(la_ligne[2]))
+            if la_ligne[0] in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+                print("_______________________________")
+                print(la_ligne)
+                if plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"] is None:
+                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"] = set()
+                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"].add(la_ligne[0])
+                else:
+                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"].add(la_ligne[0])
+            else:
+                if plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"] is None:
+                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"] = set()
+                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"].add(la_ligne[0])
+                else:
+                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"].add(la_ligne[0])
     return plateau_res
 
 
@@ -282,7 +262,7 @@ def set_case(plateau, pos, une_case):
     """
     x=pos[0]
     y=pos[1]
-    plateau[x][y] = une_case
+    plateau["le_plateau"][x][y] = une_case
 
 
 
@@ -298,8 +278,8 @@ def enlever_pacman(plateau, pacman, pos):
     Returns:
         bool: True si l'opération s'est bien déroulée, False sinon
     """
-    if pacman in plateau and plateau[pacman]==pos:
-        del plateau[pacman]
+    if not plateau["le_plateau"][pos[0]][pos[1]]["pacmans_presents"] is None and pacman in plateau["le_plateau"][pos[0]][pos[1]]["pacmans_presents"]:
+        plateau["le_plateau"][pos[0]][pos[1]]["pacmans_presents"].remove(pacman)
         return True
     return False
 
@@ -315,8 +295,8 @@ def enlever_fantome(plateau, fantome, pos):
     Returns:
         bool: True si l'opération s'est bien déroulée, False sinon
     """
-    if fantome in plateau and plateau[fantome]==pos:
-        del plateau[fantome]
+    if not plateau["le_plateau"][pos[0]][pos[1]]["fantomes_presents"] is None and fantome in plateau["le_plateau"][pos[0]][pos[1]]["fantomes_presents"]:
+        plateau["le_plateau"][pos[0]][pos[1]]["fantomes_presents"].remove(fantome)
         return True
     return False
 
@@ -332,7 +312,10 @@ def prendre_objet(plateau, pos):
         int: l'entier représentant l'objet qui se trouvait sur la case.
         const.AUCUN indique aucun objet
     """
-    return case.get_objet(get_case(plateau,pos))
+    obj = case.prendre_objet(get_case(plateau,pos))
+    
+    return obj
+    
 
         
 def deplacer_pacman(plateau, pacman, pos, direction, passemuraille=False):
@@ -356,7 +339,8 @@ def deplacer_pacman(plateau, pacman, pos, direction, passemuraille=False):
     new_pos = pos_arrivee(plateau,pos,direction)
     case_arrivee = get_case(plateau,new_pos)
     if (not case.est_mur(case_arrivee)) or (case.est_mur(case_arrivee) and passemuraille):
-        plateau[pacman] = new_pos
+        poser_pacman(plateau,pacman,new_pos)
+        enlever_pacman(plateau,pacman,pos)
         return new_pos
     else:
         return None
