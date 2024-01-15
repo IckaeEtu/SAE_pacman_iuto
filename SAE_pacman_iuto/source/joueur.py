@@ -24,7 +24,16 @@ def Joueur(couleur, nom, nb_points, nb_faux_mvt, pos_pacman, pos_fantome, objets
     Returns:
         dict: un dictionnaire représentant le joueur
     """
-    pass
+    joueur = dict()
+    joueur["couleur"] = couleur
+    joueur["nom"] = nom
+    joueur["nb_points"] = nb_points
+    joueur["nb_faux_mvt"] = nb_faux_mvt
+    joueur["pos_pacman"] = pos_pacman
+    joueur["pos_fantome"] = pos_fantome
+    joueur["objets"] = objets
+    return joueur
+            
 
 def joueur_from_str(description):
     """créer un joueur à partir d'un chaine de caractères qui contient
@@ -38,7 +47,25 @@ def joueur_from_str(description):
     Returns:
         dict: le joueur ayant les caractéristiques décrite dans la chaine.
     """
-    pass
+    joueur = dict()
+
+    carac = description.split(";")
+
+    joueur["couleur"] = carac[0]
+    joueur["nom"] = carac[10]
+    joueur["nb_points"] = int(carac[1])
+    joueur["nb_faux_mvt"] = int(carac[2])
+    joueur["pos_pacman"] = (int(carac[3]), int(carac[4]))
+    joueur["pos_fantome"] = (int(carac[5]), int(carac[6]))
+    
+    o = const.aucun_objet()
+    o[const.GLOUTON] = int(carac[7])
+    o[const.IMMOBILITE] = int(carac[8])
+    o[const.PASSEMURAILLE] = int(carac[9])
+    joueur["objets"] = o
+
+    return joueur
+            
 
 def get_couleur(joueur):
     """retourne la couleur du joueur
@@ -49,7 +76,9 @@ def get_couleur(joueur):
     Returns:
         str: une lettre indiquant la couleur du joueur
     """
-    pass
+    if "couleur" in joueur:
+        return joueur["couleur"] 
+    return None
 
 
 def get_nom(joueur):
@@ -61,7 +90,9 @@ def get_nom(joueur):
     Returns:
         str: le nom du joueur
     """
-    pass
+    if "nom" in joueur:
+        return joueur["nom"] 
+    return None
 
 
 def get_nb_points(joueur):
@@ -71,7 +102,10 @@ def get_nb_points(joueur):
     Returns:
         int: la réserve du joueur
     """
-    return joueur["nb_points"]
+    if "nb_points" in joueur:
+        return joueur["nb_points"] 
+    return None
+
 
 def get_nb_faux_mvt(joueur):
     """retourne le nombre de faux mouvements autorisés pour le joueur
@@ -80,7 +114,10 @@ def get_nb_faux_mvt(joueur):
     Returns:
         int: le nombre de faux mouvements autorisés du joueur
     """
-    pass
+    if "nb_faux_mvt" in joueur:
+        return joueur["nb_faux_mvt"] 
+    return None
+            
 
 def get_objets(joueur):
     """retourne la liste des objets possédés par le joueur
@@ -100,7 +137,10 @@ def get_duree(joueur,objet):
         int: un entier indiquant la durée de vie l'objet possédé par le joueur
             0 indique que le joueur n'a pas l'objet ou que celui-ci a une durée de vie de 0
     """
-    pass
+    if objet in joueur["objets"]:
+        return joueur["objets"][objet]
+    return 0
+            
 
 def get_pos_pacman(joueur):
     """retourne la position du pacman du joueur. ATTENTION c'est la position stockée dans le
@@ -110,7 +150,10 @@ def get_pos_pacman(joueur):
     Returns:
         tuple: une paire d'entiers indiquant la position du pacman du joueur.
     """
-    pass
+    if "pos_pacman" in joueur:
+        return joueur["pos_pacman"]
+    return None 
+
 
 def get_pos_fantome(joueur):
     """retourne la position du fantome du joueur. ATTENTION c'est la position stockée dans le
@@ -120,7 +163,10 @@ def get_pos_fantome(joueur):
     Returns:
         tuple: une paire d'entiers indiquant la position du fantome du joueur.
     """
-    pass
+    if "pos_fantome" in joueur:
+        return joueur["pos_fantome"]
+    return None 
+            
 
 def set_pos_pacman(joueur, pos):
     """met à jour la position du pacman du joueur
@@ -131,6 +177,7 @@ def set_pos_pacman(joueur, pos):
     """
     joueur["pos_pacman"] = pos
 
+
 def set_pos_fantome(joueur, pos):
     """met à jour la position du fantome du joueur
 
@@ -138,7 +185,8 @@ def set_pos_fantome(joueur, pos):
         joueur (dict): le joueur considéré
         pos (tuple): une paire d'entiers (lin,col) indiquant la position du joueur
     """
-    pass
+    joueur["pos_fantome"] = pos
+
 
 def add_points(joueur, quantite):
     """ modifie le nombre de points du joueur.
@@ -150,7 +198,9 @@ def add_points(joueur, quantite):
     Returns:
         int: le nouveau nombre de points du joueur
     """
-    pass
+    joueur["nb_points"] += quantite
+    return joueur["nb_points"]
+            
 
 def faux_mouvement(joueur):
     """Enlève 1 au nombre de faux mouvements autorisés pour le joueur
@@ -160,7 +210,9 @@ def faux_mouvement(joueur):
     Returns:
         int: le nombre de faux mouvements autorisés restants
     """
-    pass
+    joueur["nb_faux_mvt"] -= const.PENALITE
+    return joueur["nb_faux_mvt"]
+            
 
 def reinit_faux_mouvements(joueur):
     """Réinitialise le nombre de faux mouvements autorisés pour le joueur
@@ -168,7 +220,8 @@ def reinit_faux_mouvements(joueur):
     Args:
         joueur (dict): le joueur considéré
     """
-    pass
+    joueur["nb_faux_mvt"] = const.NB_FAUX_MVT
+    return joueur["nb_faux_mvt"]
 
 
 def ajouter_objet(joueur, objet):
