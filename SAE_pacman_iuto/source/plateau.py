@@ -257,7 +257,7 @@ def Plateau(plan):
         for col in range(nb_colonnes):
             mur = les_lignes[lig][col] == "#"
             obj = les_lignes[lig][col]
-            if obj == " ":
+            if obj == " " or obj == "#":
                 obj = const.AUCUN
             ligne.append({"mur":mur,"objet":obj,"pacmans_presents": None,"fantomes_presents": None})
         plateau_res["le_plateau"].append(ligne)
