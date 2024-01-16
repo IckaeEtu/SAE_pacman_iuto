@@ -263,7 +263,7 @@ def Plateau(plan):
         plateau_res["le_plateau"].append(ligne)
 
 
-    for ind_ligne in range(nb_lignes+1,len(les_lignes)):
+    for ind_ligne in range(nb_lignes+1,len(les_lignes)):    #On met les personnages
         la_ligne = les_lignes[ind_ligne].split(";")
         if len(la_ligne) > 1:
             if la_ligne[0] in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
@@ -291,6 +291,7 @@ def set_case(plateau, pos, une_case):
     """
     x=pos[0]
     y=pos[1]
+    
     plateau["le_plateau"][x][y] = une_case
 
 
@@ -484,7 +485,29 @@ def prochaine_intersection(plateau,pos,direction):
              -1 si la direction mène à un cul de sac.
     """
     
-    pass
+    res = -1
+    direct_possible = ""
+    prochaine_pos = pos_arrivee(plateau,pos,direction)
+    while len(direct_possible) < 3 and res < get_nb_lignes(plateau):
+        direct_possible = directions_possibles(plateau,prochaine_pos,False)
+        if len(direct_possible) == 1:
+            return -1
+        res += 1
+        direction_prec = direction
+        if direction_prec == "N":
+            direction_disabled = "S"
+        elif direction_prec == "S":
+            direction_disabled = "N"
+        elif direction_prec == "O":
+            direction_disabled = "E"
+        else:
+            direction_disabled = "O"
+        ens_direct = set(direct_possible)-set(direction_disabled)
+        for direct in ens_direct:
+            direction = direct
+        prochaine_pos = pos_arrivee(plateau,prochaine_pos,direction)
+    return res
+ 
 
 # A NE PAS DEMANDER
 def plateau_2_str(plateau):
