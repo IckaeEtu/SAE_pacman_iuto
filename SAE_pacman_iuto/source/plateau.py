@@ -468,6 +468,9 @@ def analyse_plateau(plateau, pos, direction, distance_max):
             S'il n'est pas possible d'aller dans la direction indiquée à partir de pos
             la fonction retourne None
     """ 
+    if not direction in directions_possibles(plateau,pos,False):
+        return None
+    
     res = {'objets':[],'pacmans':[],'fantomes':[]}
     for ligne in range(get_nb_lignes(plateau)):            #On crée le calque en ajoutant une couche d'information sur le plateau
         for colonne in range(get_nb_colonnes(plateau)):
@@ -488,7 +491,7 @@ def analyse_plateau(plateau, pos, direction, distance_max):
 
     for fantome in case.get_fantomes(case_actuelle):
         res["fantomes"].append((inondation,fantome))
-    pos_parcouru.union(position)
+    pos_parcouru = pos_parcouru.union(position)
 
 
     while len_pos != 0 and inondation < distance_max:
