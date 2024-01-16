@@ -291,7 +291,6 @@ def set_case(plateau, pos, une_case):
     """
     x=pos[0]
     y=pos[1]
-    
     plateau["le_plateau"][x][y] = une_case
 
 
@@ -469,7 +468,50 @@ def analyse_plateau(plateau, pos, direction, distance_max):
             S'il n'est pas possible d'aller dans la direction indiquée à partir de pos
             la fonction retourne None
     """ 
-    pass
+    res = {'objets':[],'pacmans':[],'fantomes':[]}
+    for ligne in range(get_nb_lignes(plateau)):            #On crée le calque en ajoutant une couche d'information sur le plateau
+        for colonne in range(get_nb_colonnes(plateau)):
+            case_actuelle = get_case(plateau,(ligne,colonne))
+            print("case_actuelle",case_actuelle,(ligne,colonne))
+            case_actuelle["distance"] = None
+            set_case(plateau,(ligne,colonne),case_actuelle)
+            
+    position = {pos}
+    inondation = 1          #la distance
+    len_pos = len(position)
+    pos_parcouru = set()
+    while len_pos != 0 and inondation < distance_max:
+        pos_voisins = set()
+
+        for pos_actuel in position:
+            for direction in directions_possibles(plateau,pos_actuel):
+                voisin = pos_arrivee(plateau,pos_actuel,direction)
+                if voisin not in pos_parcouru:
+                    pos_voisins.add(voisin)
+        position = set()
+
+        for voisin in pos_voisins:
+            case_actuelle = get_case(plateau,voisin)
+            case_actuelle["distance"] = inondation
+            position.add(voisin)
+            pos_parcouru.add(voisin)
+            print("case_actuelle",case_actuelle)
+            
+            if case.get_objet(case_actuelle) != const.AUCUN:
+                res["objets"].append((inondation,case.get_objet(case_actuelle))) 
+
+            for pacman in case.get_pacmans(case_actuelle):
+                res["pacmans"].append((inondation,pacman))
+
+            for fantome in case.get_fantomes(case_actuelle):
+                res["fantomes"].append((inondation,fantome))
+            print(res)
+        len_pos = len(position)
+        inondation += 1 
+
+    return res
+
+
 
 def prochaine_intersection(plateau,pos,direction):
     """calcule la distance de la prochaine intersection
