@@ -472,14 +472,25 @@ def analyse_plateau(plateau, pos, direction, distance_max):
     for ligne in range(get_nb_lignes(plateau)):            #On crée le calque en ajoutant une couche d'information sur le plateau
         for colonne in range(get_nb_colonnes(plateau)):
             case_actuelle = get_case(plateau,(ligne,colonne))
-            print("case_actuelle",case_actuelle,(ligne,colonne))
             case_actuelle["distance"] = None
-            set_case(plateau,(ligne,colonne),case_actuelle)
             
-    position = {pos}
-    inondation = 1          #la distance
+    position = {pos_arrivee(plateau,pos,direction)}
+    inondation = 1       #la distance
     len_pos = len(position)
     pos_parcouru = set()
+
+    case_actuelle = get_case(plateau,pos_arrivee(plateau,pos,direction))
+    if case.get_objet(case_actuelle) != const.AUCUN:
+        res["objets"].append((inondation,case.get_objet(case_actuelle))) 
+
+    for pacman in case.get_pacmans(case_actuelle):
+        res["pacmans"].append((inondation,pacman))
+
+    for fantome in case.get_fantomes(case_actuelle):
+        res["fantomes"].append((inondation,fantome))
+    pos_parcouru.union(position)
+
+
     while len_pos != 0 and inondation < distance_max:
         pos_voisins = set()
 
@@ -490,13 +501,13 @@ def analyse_plateau(plateau, pos, direction, distance_max):
                     pos_voisins.add(voisin)
         position = set()
 
+        inondation += 1
+
         for voisin in pos_voisins:
             case_actuelle = get_case(plateau,voisin)
             case_actuelle["distance"] = inondation
             position.add(voisin)
             pos_parcouru.add(voisin)
-            print("case_actuelle",case_actuelle)
-            
             if case.get_objet(case_actuelle) != const.AUCUN:
                 res["objets"].append((inondation,case.get_objet(case_actuelle))) 
 
@@ -507,7 +518,7 @@ def analyse_plateau(plateau, pos, direction, distance_max):
                 res["fantomes"].append((inondation,fantome))
             print(res)
         len_pos = len(position)
-        inondation += 1 
+        
 
     return res
 
