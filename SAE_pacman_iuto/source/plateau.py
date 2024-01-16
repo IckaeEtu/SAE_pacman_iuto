@@ -1,543 +1,446 @@
-"""
-            SAE1.02 PACMAN IUT'O
-         BUT1 Informatique 2023-2024
-
-        Module plateau.py
-        Ce module contient l'implémentation de la structure de données
-        qui gère le plateau jeu aussi qu'un certain nombre de fonctions
-        permettant d'observer le plateau et d'aider l'IA à prendre des décisions
-"""
+import unittest
 import const
+import plateau
 import case
-import random
+class test_case(unittest.TestCase):  
+    def setUp(self):
+        with open("cartes/test1.txt") as fic:
+            self.plateau1=fic.read()
+        with open("cartes/test2.txt") as fic:
+            self.plateau2=fic.read()
+        with open("cartes/test3.txt") as fic:
+            self.plateau3=fic.read()
 
 
-
-def get_nb_lignes(plateau):
-    """retourne le nombre de lignes du plateau
-
-    Args:
-        plateau (dict): le plateau considéré
-
-    Returns:
-        int: le nombre de lignes du plateau
-    """
-    return plateau['nb_lignes']
-
-
-def get_nb_colonnes(plateau):
-    """retourne le nombre de colonnes du plateau
-
-    Args:
-        plateau (dict): le plateau considéré
-
-    Returns:
-        int: le nombre de colonnes du plateau
-    """
-    return plateau['nb_colonnes']
-
-def pos_ouest(plateau, pos):
-    """retourne la position de la case à l'ouest de pos
-
-    Args:
-        plateau (dict): le plateau considéré
-        pos (tuple): une paire d'entiers donnant la position
-    Returns:
-        int: un tuple d'entiers
-    """
-    x = pos[0]
-    y = pos[1]
-    if y == 0:
-        return (x,get_nb_colonnes(plateau)-1)
-    return (x,y-1)
-
-def pos_est(plateau, pos):
-    """retourne la position de la case à l'est de pos
-
-    Args:
-        plateau (dict): le plateau considéré
-        pos (tuple): une paire d'entiers donnant la position
-    Returns:
-        int: un tuple d'entiers
-    """
-    x = pos[0]
-    y = pos[1]
-    if y == get_nb_colonnes(plateau)-1:
-        return (x,0)
-    return (x,y+1)
-
-def pos_nord(plateau, pos):
-    """retourne la position de la case au nord de pos
-
-    Args:
-        plateau (dict): le plateau considéré
-        pos (tuple): une paire d'entiers donnant la position
-    Returns:
-        int: un tuple d'entiers
-    """
-    x = pos[0]
-    y = pos[1]
-    if x == 0:
-        return (get_nb_lignes(plateau)-1,y)
-    return (x-1,y)
-
-
-def pos_sud(plateau, pos):
-    """retourne la position de la case au sud de pos
-
-    Args:
-        plateau (dict): le plateau considéré
-        pos (tuple): une paire d'entiers donnant la position
-    Returns:
-        int: un tuple d'entiers
-    """
-    x = pos[0]
-    y = pos[1]
-    if x == get_nb_lignes(plateau)-1:
-        return (0,y)
-    return (x+1,y)
-
-def pos_arrivee(plateau,pos,direction):
-    """ calcule la position d'arrivée si on part de pos et qu'on va dans
-    la direction indiquée en tenant compte que le plateau est un tore
-    si la direction n'existe pas la fonction retourne None
-    Args:
-        plateau (dict): Le plateau considéré
-        pos (tuple): une paire d'entiers qui donne la position de départ
-        direction (str): un des caractère NSEO donnant la direction du déplacement
-
-    Returns:
-        None|tuple: None ou une paire d'entiers indiquant la position d'arrivée
-    """
-    match direction:
-        case "N":
-            if pos_nord(plateau,pos)[0] < 0:
-                return (get_nb_lignes(plateau)-1,pos[1])
-            else:
-                return pos_nord(plateau,pos)
-        case "S":
-            if pos_sud(plateau,pos)[0] >= get_nb_lignes(plateau):
-                return (0,pos[1])
-            else:
-                return pos_sud(plateau,pos)
-        case "E":
-            if pos_est(plateau,pos)[1] >= get_nb_colonnes(plateau):
-                return (pos[0],0)
-            else:
-                return pos_est(plateau,pos)
-        case "O":
-            if pos_ouest(plateau,pos)[1] < 0:
-                return (pos[0],get_nb_colonnes(plateau)-1)
-            else:
-                return pos_ouest(plateau,pos)
-        case _:
-            return None
-
-
-def get_case(plateau, pos):
-    """retourne la case qui se trouve à la position pos du plateau
-
-    Args:
-        plateau (dict): le plateau considéré
-        pos (tuple): une paire (lig,col) de deux int
-
-    Returns:
-        dict: La case qui se situe à la position pos du plateau
-    """
-    return plateau["le_plateau"][pos[0]][pos[1]]
+    def verif(self,plan,le_plateau):
+        les_lignes=plan.split("\n")
+        [nb_lignes,nb_colonnes]=les_lignes[0].split(";")
+        nb_lignes=int(nb_lignes)
+        nb_colonnes=int(nb_colonnes)
+        nbli=plateau.get_nb_lignes(le_plateau)
+        if nb_lignes!=nbli:
+            return "Le nombre de lignes est incorrect. Attendu: "+str(nb_lignes)+\
+                "Obtenu: "+ str(nbli)
+        nbco=plateau.get_nb_colonnes(le_plateau)
+        if nb_colonnes!=nbco:
+            return "Le nombre de colonnes est incorrect. Attendu: "+str(nb_colonnes)+\
+                "Obtenu: "+ str(nbco)
+        for lin in range(nb_lignes):
+            la_ligne=les_lignes[lin+1]
+            for col in range(nb_colonnes):
+                la_case=plateau.get_case(le_plateau,(lin,col))
+                if la_ligne[col]==' ':
+                    if case.est_mur(la_case):
+                        return "La case "+str(lin)+","+str(col)+\
+                            " devrait être un couloir alors que c'est un mur dans votre plateau"
+                    obj=case.get_objet(la_case)
+                    if obj!=' ':
+                        return "La case "+str(lin)+","+str(col)+\
+                            " devrait être vide alors qu'elle a l'objet "+\
+                                str(obj)+" dans votre plateau"
+                elif la_ligne[col]=='#':
+                    obj=case.get_objet(la_case)
+                    if not case.est_mur(la_case):
+                        return "La case "+str(lin)+","+str(col)+\
+                            " devrait être un mur alors que c'est un couloir dans votre plateau"
+                    coul=case.get_objet(la_case)
+                    if coul!=' ':
+                        return "La case "+str(lin)+","+str(col)+\
+                            " devrait être vide alors qu'elle a l'objet "+\
+                                str(obj)+" dans votre plateau"
+                elif la_ligne[col] in const.LES_OBJETS:
+                    if case.est_mur(la_case):
+                        return "La case "+str(lin)+","+str(col)+\
+                            " devrait être un couloir alors que c'est un mur dans votre plateau"
+                    obj=case.get_objet(la_case)
+                    if obj!=la_ligne[col]:
+                        return "La case "+str(lin)+","+str(col)+\
+                            " devrait être contenir l'objet "+la_ligne[col]+" alors qu'elle contient l'objet "+\
+                                str(obj)+" dans votre plateau"
                 
+        nb_pacmans=int(les_lignes[nb_lignes+1])
+        for ind in range(nb_lignes+2,nb_lignes+2+nb_pacmans):
+            pacman,lin,col=les_lignes[ind].split(';')
+            lin=int(lin)
+            col=int(col)
+            pacmans=case.get_pacmans(plateau.get_case(le_plateau,(lin,col)))
+            if pacman not in pacmans:
+                return "La case "+str(lin)+","+str(col)+\
+                            " devrait contenir le pacman "+pacman+\
+                            " alors qu'elle contient cet ensemble de pacmans "+\
+                            str(pacmans)
+        nb_fantomes=int(les_lignes[nb_lignes+2+nb_pacmans])
+        for ind in range(nb_lignes+3+nb_pacmans,nb_lignes+3+nb_pacmans+nb_fantomes):
+            fantome,lin,col=les_lignes[ind].split(';')
+            lin=int(lin)
+            col=int(col)
+            fantomes=case.get_fantomes(plateau.get_case(le_plateau,(lin,col)))
+            if fantome not in fantomes:
+                return "La case "+str(lin)+","+str(col)+\
+                            " devrait contenir le fantome "+fantome+\
+                            " alors qu'elle contient cet ensemble de fantomes "+\
+                            str(fantomes)
+        return None
+
+    def test_Plateau(self):
+        res=self.verif(self.plateau1,plateau.Plateau(self.plateau1))
+        print("######################")
+        print(self.plateau1)
+        print(plateau.Plateau(self.plateau1))
+        print("##############################")
+        self.assertIsNone(res,res)
+        res=self.verif(self.plateau2,plateau.Plateau(self.plateau2))
+        self.assertIsNone(res,res)
+        res=self.verif(self.plateau3,plateau.Plateau(self.plateau3))
+        self.assertIsNone(res,res)
+
+    def test_pos_nord(self):
+        p1=plateau.Plateau(self.plateau1)
+        res=plateau.pos_nord(p1,(0,12))
+        self.assertEqual(res,
+                         (plateau.get_nb_lignes(p1)-1,12),
+                         "La position au nord de la case (0,12) devrait être ("+\
+                            str(plateau.get_nb_lignes(p1)-1)+",12)"+\
+                            " alors que vous retournez "+str(res))
+        res=plateau.pos_nord(p1,(28,0))
+        self.assertEqual(res,(27,0),
+                         "La position au nord de la case (28,0) devrait être (27,0)"+\
+                            " alors que vous retournez "+str(res))
+        p2=plateau.Plateau(self.plateau2)
+        res=plateau.pos_nord(p2,(0,5))
+        self.assertEqual(res,
+                         (plateau.get_nb_lignes(p2)-1,5),
+                         "La position au nord de la case (0,5) devrait être ("+\
+                            str(plateau.get_nb_lignes(p2)-1)+",5)"+\
+                            " alors que vous retournez "+str(res))
+        res=plateau.pos_nord(p2,(3,0))
+        self.assertEqual(res,(2,0),
+                         "La position au nord de la case (3,0) devrait être (2,0)"+\
+                            " alors que vous retournez "+str(res))
+
+    def test_pos_sud(self):
+        p1=plateau.Plateau(self.plateau1)
+        res=plateau.pos_sud(p1,(plateau.get_nb_lignes(p1)-1,10))
+        self.assertEqual(res,
+                         (0,10),
+                         "La position au sud de la case ("+str(plateau.get_nb_lignes(p1)-1)+\
+                            ",10) devrait être (0,10)"+\
+                            " alors que vous retournez "+str(res))
+        res=plateau.pos_sud(p1,(14,0))
+        self.assertEqual(res,(15,0),
+                         "La position au sud de la case (14,0) devrait être (15,0)"+\
+                            " alors que vous retournez "+str(res))
+        p2=plateau.Plateau(self.plateau2)
+        res=plateau.pos_sud(p2,(plateau.get_nb_lignes(p2)-1,7))
+        self.assertEqual(res,
+                         (0,7),
+                         "La position au sud de la case ("+\
+                            str(plateau.get_nb_lignes(p2)-1)+\
+                            ",7) devrait être (0,7)"+\
+                            " alors que vous retournez "+str(res))
+        res=plateau.pos_sud(p2,(3,0))
+        self.assertEqual(res,(4,0),
+                         "La position au sud de la case (3,0) devrait être (4,0)"+\
+                            " alors que vous retournez "+str(res))
+
+    def test_pos_ouest(self):
+        p1=plateau.Plateau(self.plateau1)
+        res=plateau.pos_ouest(p1,(12,0))
+        self.assertEqual(res,
+                         (12,plateau.get_nb_colonnes(p1)-1),
+                         "La position à l'ouest de la case (12,0) devrait être (12,"+\
+                            str(plateau.get_nb_colonnes(p1)-1)+")"+\
+                            " alors que vous retournez "+str(res))
+        res=plateau.pos_ouest(p1,(0,28))
+        self.assertEqual(res,(0,27),
+                         "La position à l'ouest de la case (0,28) devrait être (0,27)"+\
+                            " alors que vous retournez "+str(res))
+        p2=plateau.Plateau(self.plateau2)
+        res=plateau.pos_ouest(p2,(5,0))
+        self.assertEqual(res,
+                         (5,plateau.get_nb_colonnes(p2)-1),
+                         "La position à l'ouest de la case (5,0) devrait être (5,"+\
+                            str(plateau.get_nb_colonnes(p2)-1)+")"+\
+                            " alors que vous retournez "+str(res))
+        res=plateau.pos_ouest(p2,(0,3))
+        self.assertEqual(res,(0,2),
+                         "La position à l'ouest de la case (0,3) devrait être (0,2)"+\
+                            " alors que vous retournez "+str(res))
+
+    def test_pos_est(self):
+        p1=plateau.Plateau(self.plateau1)
+        res=plateau.pos_est(p1,(15,plateau.get_nb_colonnes(p1)-1))
+        self.assertEqual(res,
+                         (15,0),
+                         "La position à l'est de la case (15"+\
+                            str(plateau.get_nb_colonnes(p1)-1)+\
+                            ") devrait être (15,0) alors que vous retournez "+str(res))
+        res=plateau.pos_est(p1,(0,26))
+        self.assertEqual(res,(0,27),
+                         "La position à l'est de la case (0,26) devrait être (0,27)"+\
+                            " alors que vous retournez "+str(res))
+        p2=plateau.Plateau(self.plateau2)
+        res=plateau.pos_est(p2,(0,5))
+        self.assertEqual(res,
+                         (0,6),
+                         "La position à l'est de la case (0,5) devrait être (0,6)"+\
+                            " alors que vous retournez "+str(res))
+        res=plateau.pos_est(p2,(0,plateau.get_nb_colonnes(p2)-1))
+        self.assertEqual(res,(0,0),
+                         "La position à l'est de la case (0,"+\
+                            str(plateau.get_nb_colonnes(p2)-1)+\
+                            ") devrait être (0,0) alors que vous retournez "+str(res))
+
+    def test_pos_arrivee(self):
+        p1=plateau.Plateau(self.plateau1)
+        nb_lig=plateau.get_nb_lignes(p1)
+        nb_col=plateau.get_nb_colonnes(p1)
+        directions="NSOE"
+        pos_test=[(0,12),(nb_lig-1,7),(7,0),(11,nb_col-1),(6,5),(6,5),(6,5),(6,5)]
+        pos_attendues=[(nb_lig-1,12),(0,7),(7,nb_col-1),(11,0),(5,5),(7,5),(6,4),(6,6)]
+        for i in range(len(pos_test)):
+            res=plateau.pos_arrivee(p1,pos_test[i],directions[i%4])
+            self.assertEqual(res,pos_attendues[i],
+                             "L'appel de pos_arrivee sur la plateau test1.txt"+\
+                             " à partir de la case "+str(pos_test[i])+\
+                             " en direction de "+str(directions[i%4])+\
+                             " devrait retourner "+str(pos_attendues[i])+\
+                             " or vous retournez "+str(res)
+                             )
+
+
+    def test_enlever_pacman(self):
+        p1=plateau.Plateau(self.plateau1)
+        res=plateau.enlever_pacman(p1,'A',(1,2))
+        self.assertTrue(res,"Le pacman A devrait être sur la case (1,2) du plateau test1.txt")
+        self.assertFalse('A' in case.get_pacmans(plateau.get_case(p1,(1,2))),
+                        "après avoir enlevé le pacman A de la case (1,2) il ne devrait "+\
+                         "plus être sur cette case")
+        res=plateau.enlever_pacman(p1,'C',(3,6))
+        self.assertTrue(res,"Le pacman C devrait être sur la case (3,6) du plateau test1.txt")
+        self.assertFalse('C' in case.get_pacmans(plateau.get_case(p1,(3,6))),
+                        "après avoir enlevé le pacman C de la case (3,6) il ne devrait "+\
+                         "plus être sur cette case")
+        self.assertFalse(plateau.enlever_pacman(p1,'B',(1,1)),
+                    "Le pacman B ne se trouve pas sur la case (1,1) du plateau 1 or vous le détectez")
+
+    def test_enlever_fantome(self):
+        p1=plateau.Plateau(self.plateau1)
+        res=plateau.enlever_fantome(p1,'a',(7,5))
+        self.assertTrue(res,"Le fantome a devrait être sur la case (7,5) du plateau test1.txt")
+        self.assertFalse('a' in case.get_fantomes(plateau.get_case(p1,(7,5))),
+                        "après avoir enlevé le fantome a de la case (7,5) il ne devrait "+\
+                         "plus être sur cette case")
+        self.assertTrue('d' in case.get_fantomes(plateau.get_case(p1,(7,5))),
+                        "après avoir enlevé le fantome a de la case (7,5) le fantome d devrait "+\
+                         "toujours y être or il semble avoir disparu")
+        res=plateau.enlever_fantome(p1,'e',(3,6))
+        self.assertTrue(res,"Le fantome e devrait être sur la case (3,6) du plateau test1.txt")
+        self.assertFalse('e' in case.get_fantomes(plateau.get_case(p1,(3,6))),
+                        "après avoir enlevé le fantome e de la case (3,6) il ne devrait "+\
+                         "plus être sur cette case")
         
-
-def get_objet(plateau, pos):
-    """retourne l'objet qui se trouve à la position pos du plateau
-
-    Args:
-        plateau (dict): le plateau considéré
-        pos (tuple): une paire (lig,col) de deux int
-
-    Returns:
-        str: le caractère symbolisant l'objet
-    """
-    return case.get_objet(get_case(plateau,pos))
-
-def poser_pacman(plateau, pacman, pos):
-    """pose un pacman en position pos sur le plateau
-
-    Args:
-        plateau (dict): le plateau considéré
-        pacman (str): la lettre représentant le pacman
-        pos (tuple): une paire (lig,col) de deux int
-    """
-    set_case(plateau,pos,case.poser_pacman(get_case(plateau,pos),pacman))
-
-def poser_fantome(plateau, fantome, pos):
-    """pose un fantome en position pos sur le plateau
-
-    Args:
-        plateau (dict): le plateau considéré
-        fantome (str): la lettre représentant le fantome
-        pos (tuple): une paire (lig,col) de deux int
-    """
-    set_case(plateau,pos,case.poser_fantome(get_case(plateau,pos),fantome))
-
-def poser_objet(plateau, objet, pos):
-    """Pose un objet en position pos sur le plateau. Si cette case contenait déjà
-        un objet ce dernier disparait
-
-    Args:
-        plateau (dict): le plateau considéré
-        objet (int): un entier représentant l'objet. const.AUCUN indique aucun objet
-        pos (tuple): une paire (lig,col) de deux int
-    """
-    set_case(plateau,pos,case.poser_objet(get_case(plateau,pos),objet))
-
-def plateau_from_str(plan, complet=True):
-    """Construit un plateau à partir d'une chaine de caractère contenant les informations
-        sur le contenu du plateau (voir sujet)
-
-    Args:
-        la_chaine (str): la chaine de caractères décrivant le plateau
-
-    Returns:
-        dict: le plateau correspondant à la chaine. None si l'opération a échoué
-    """
-    les_lignes = plan.split("\n")
-    [nb_lignes,nb_colonnes]=les_lignes[0].split(";")
-    nb_lignes = int(nb_lignes)
-    nb_colonnes = int(nb_colonnes)
-    plateau_res = {'nb_lignes': nb_lignes, 'nb_colonnes': nb_colonnes, 'le_plateau': []}
-    for lig in range(1,nb_lignes+1):
-        ligne = []
-        for col in range(nb_colonnes):
-            mur = les_lignes[lig][col] == "#"
-            obj = les_lignes[lig][col]
-            if obj == " ":
-                obj = const.AUCUN
-            ligne.append({"mur":mur,"objet":obj,"pacmans_presents": None,"fantomes_presents": None})
-        plateau_res["le_plateau"].append(ligne)
-
-
-    for ind_ligne in range(nb_lignes+1,len(les_lignes)):
-        la_ligne = les_lignes[ind_ligne].split(";")
-        if len(la_ligne) > 1:
-            if la_ligne[0] in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-                if plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"] is None:
-                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"] = set()
-                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"].add(la_ligne[0])
-                else:
-                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"].add(la_ligne[0])
-            else:
-                if plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"] is None:
-                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"] = set()
-                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"].add(la_ligne[0])
-                else:
-                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"].add(la_ligne[0])
-    return plateau_res
-
-def Plateau(plan):
-    """Créer un plateau en respectant le plan donné en paramètre.
-        Le plan est une chaine de caractères contenant
-            '#' (mur)
-            ' ' (couloir non peint)
-            une lettre majuscule (un couloir peint par le joueur représenté par la lettre)
-
-    Args:
-        plan (str): le plan sous la forme d'une chaine de caractères
-
-    Returns:
-        dict: Le plateau correspondant au plan
-    """
-    les_lignes = plan.split("\n")
-    [nb_lignes,nb_colonnes]=les_lignes[0].split(";")
-    nb_lignes = int(nb_lignes)
-    nb_colonnes = int(nb_colonnes)
-    plateau_res = {'nb_lignes': nb_lignes, 'nb_colonnes': nb_colonnes, 'le_plateau': []}
-    for lig in range(1,nb_lignes+1):
-        ligne = []
-        for col in range(nb_colonnes):
-            mur = les_lignes[lig][col] == "#"
-            obj = les_lignes[lig][col]
-            if obj == " " or obj == "#":
-                obj = const.AUCUN
-            ligne.append({"mur":mur,"objet":obj,"pacmans_presents": None,"fantomes_presents": None})
-        plateau_res["le_plateau"].append(ligne)
-
-
-    for ind_ligne in range(nb_lignes+1,len(les_lignes)):    #On met les personnages
-        la_ligne = les_lignes[ind_ligne].split(";")
-        if len(la_ligne) > 1:
-            if la_ligne[0] in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-                if plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"] is None:
-                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"] = set()
-                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"].add(la_ligne[0])
-                else:
-                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["pacmans_presents"].add(la_ligne[0])
-            else:
-                if plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"] is None:
-                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"] = set()
-                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"].add(la_ligne[0])
-                else:
-                    plateau_res["le_plateau"][int(la_ligne[1])][int(la_ligne[2])]["fantomes_presents"].add(la_ligne[0])
-    return plateau_res
-
-
-def set_case(plateau, pos, une_case):
-    """remplace la case qui se trouve en position pos du plateau par une_case
-
-    Args:
-        plateau (dict): le plateau considéré
-        pos (tuple): une paire (lig,col) de deux int
-        une_case (dict): la nouvelle case
-    """
-    x=pos[0]
-    y=pos[1]
-    
-    plateau["le_plateau"][x][y] = une_case
-
-
-
-
-def enlever_pacman(plateau, pacman, pos):
-    """enlève un joueur qui se trouve en position pos sur le plateau
-
-    Args:
-        plateau (dict): le plateau considéré
-        pacman (str): la lettre représentant le joueur
-        pos (tuple): une paire (lig,col) de deux int
-
-    Returns:
-        bool: True si l'opération s'est bien déroulée, False sinon
-    """
-    if not plateau["le_plateau"][pos[0]][pos[1]]["pacmans_presents"] is None and pacman in plateau["le_plateau"][pos[0]][pos[1]]["pacmans_presents"]:
-        plateau["le_plateau"][pos[0]][pos[1]]["pacmans_presents"].remove(pacman)
-        return True
-    return False
-
-
-def enlever_fantome(plateau, fantome, pos):
-    """enlève un fantome qui se trouve en position pos sur le plateau
-
-    Args:
-        plateau (dict): le plateau considéré
-        fantome (str): la lettre représentant le fantome
-        pos (tuple): une paire (lig,col) de deux int
-
-    Returns:
-        bool: True si l'opération s'est bien déroulée, False sinon
-    """
-    if not plateau["le_plateau"][pos[0]][pos[1]]["fantomes_presents"] is None and fantome in plateau["le_plateau"][pos[0]][pos[1]]["fantomes_presents"]:
-        plateau["le_plateau"][pos[0]][pos[1]]["fantomes_presents"].remove(fantome)
-        return True
-    return False
-
-def prendre_objet(plateau, pos):
-    """Prend l'objet qui se trouve en position pos du plateau et retourne l'entier
-        représentant cet objet. const.AUCUN indique qu'aucun objet se trouve sur case
-
-    Args:
-        plateau (dict): Le plateau considéré
-        pos (tuple): une paire (lig,col) de deux int
-
-    Returns:
-        int: l'entier représentant l'objet qui se trouvait sur la case.
-        const.AUCUN indique aucun objet
-    """
-    obj = case.prendre_objet(get_case(plateau,pos))
-    
-    return obj
-    
-
         
-def deplacer_pacman(plateau, pacman, pos, direction, passemuraille=False):
-    """Déplace dans la direction indiquée un joueur se trouvant en position pos
-        sur le plateau si c'est possible
+        self.assertFalse(plateau.enlever_pacman(p1,'b',(10,12)),
+                    "Le fantome b ne se trouve pas sur la case (10,12) du plateau 1 or vous le détectez")
 
-    Args:
-        plateau (dict): Le plateau considéré
-        pacman (str): La lettre identifiant le pacman à déplacer
-        pos (tuple): une paire (lig,col) d'int
-        direction (str): une lettre parmie NSEO indiquant la direction du déplacement
-        passemuraille (bool): un booléen indiquant si le pacman est passemuraille ou non
-
-    Returns:
-        (int,int): une paire (lig,col) indiquant la position d'arrivée du pacman 
-                   (None si le pacman n'a pas pu se déplacer)
-    """
-    if pacman not in case.get_pacmans(get_case(plateau,pos)) is None:   #on test si le pacman est là où il faudrait au départ
-        return None
-    
-    new_pos = pos_arrivee(plateau,pos,direction)
-    case_arrivee = get_case(plateau,new_pos)
-    if (not case.est_mur(case_arrivee)) or (case.est_mur(case_arrivee) and passemuraille):
-        poser_pacman(plateau,pacman,new_pos)
-        enlever_pacman(plateau,pacman,pos)
-        return new_pos
-    else:
-        return None
-
-
-def deplacer_fantome(plateau, fantome, pos, direction):
-    """Déplace dans la direction indiquée un fantome se trouvant en position pos
-        sur le plateau
-
-    Args:
-        plateau (dict): Le plateau considéré
-        fantome (str): La lettre identifiant le fantome à déplacer
-        pos (tuple): une paire (lig,col) d'int
-        direction (str): une lettre parmie NSEO indiquant la direction du déplacement
-
-    Returns:
-        (int,int): une paire (lig,col) indiquant la position d'arrivée du fantome
-                   None si le joueur n'a pas pu se déplacer
-    """
-
-    if not fantome in case.get_fantomes(get_case(plateau,pos)):
-        return None
-    
-    new_pos = pos_arrivee(plateau,pos,direction)
-    case_arrivee = get_case(plateau,new_pos)
-
-    if (not case.est_mur(case_arrivee)):
-        poser_fantome(plateau,fantome,new_pos)
-        enlever_fantome(plateau,fantome,pos)
-        return new_pos
-    else:
-        return None
-    
-def case_vide(plateau):
-    """choisi aléatoirement sur la plateau une case qui n'est pas un mur et qui
-       ne contient ni pacman ni fantome ni objet
-
-    Args:
-        plateau (dict): le plateau
-
-    Returns:
-        (int,int): la position choisie
-    """
-    ls_case_vide = []
-    for ligne in range(get_nb_lignes(plateau)):
-        for colonne in range(get_nb_colonnes(plateau)):
-            case_ = get_case(plateau,(ligne,colonne))
-            if case.get_nb_pacmans(case_) == 0 and case.get_nb_fantomes(case_) == 0 and not case.est_mur(case_) and case.get_objet(case_) == ' ':
-                ls_case_vide.append(case_)
-    return random.choice(ls_case_vide)
-
-
-def directions_possibles(plateau,pos,passemuraille=False):
-    """ retourne les directions vers où il est possible de se déplacer à partir
-        de la position pos
-
-    Args:
-        plateau (dict): le plateau considéré
-        pos (tuple): un couple d'entiers (ligne,colonne) indiquant la position de départ
-        passemuraille (bool): indique si on s'autorise à passer au travers des murs
-    
-    Returns:
-        str: une chaine de caractères indiquant les directions possibles
-              à partir de pos
-    """
-    direct_possible = ""
-    if (case.est_mur(get_case(plateau,pos_est(plateau,pos))) and passemuraille) or not case.est_mur(get_case(plateau,pos_est(plateau,pos))):
-        direct_possible += "E"
-    if (case.est_mur(get_case(plateau,pos_ouest(plateau,pos))) and passemuraille) or not case.est_mur(get_case(plateau,pos_ouest(plateau,pos))):  
-        direct_possible += "O"
-    if (case.est_mur(get_case(plateau,pos_nord(plateau,pos))) and passemuraille) or not case.est_mur(get_case(plateau,pos_nord(plateau,pos))):
-        direct_possible += "N"
-    if (case.est_mur(get_case(plateau,pos_sud(plateau,pos))) and passemuraille) or not case.est_mur(get_case(plateau,pos_sud(plateau,pos))):
-        direct_possible += "S"
-
-    return direct_possible
-#---------------------------------------------------------#
-
-
-def analyse_plateau(plateau, pos, direction, distance_max):
-    """calcul les distances entre la position pos est les différents objets et
-        joueurs du plateau si on commence par partir dans la direction indiquée
-        en se limitant à la distance max. Si il n'est pas possible d'aller dans la
-        direction indiquée à partir de pos, la fonction doit retourner None
-
-    Args:
-        plateau (dict): le plateau considéré
-        pos (tuple): une paire d'entiers indiquant la postion de calcul des distances
-        distance_max (int): un entier indiquant la distance limite de la recherche
-    Returns:
-        dict: un dictionnaire de listes. 
-                Les clés du dictionnaire sont 'objets', 'pacmans' et 'fantomes'
-                Les valeurs du dictionnaire sont des listes de paires de la forme
-                    (dist,ident) où dist est la distance de l'objet, du pacman ou du fantome
-                                    et ident est l'identifiant de l'objet, du pacman ou du fantome
-            S'il n'est pas possible d'aller dans la direction indiquée à partir de pos
-            la fonction retourne None
-    """ 
-    pass
-
-def prochaine_intersection(plateau,pos,direction):
-    """calcule la distance de la prochaine intersection
-        si on s'engage dans la direction indiquée
-
-    Args:
-        plateau (dict): le plateau considéré
-        pos (tuple): une paire d'entiers donnant la position de départ
-        direction (str): la direction choisie
-
-    Returns:
-        int: un entier indiquant la distance à la prochaine intersection
-             -1 si la direction mène à un cul de sac.
-    """
-    
-    res = -1
-    direct_possible = ""
-    prochaine_pos = pos_arrivee(plateau,pos,direction)
-    while len(direct_possible) < 3 and res < get_nb_lignes(plateau):
-        direct_possible = directions_possibles(plateau,prochaine_pos,False)
-        if len(direct_possible) == 1:
-            return -1
-        res += 1
-        direction_prec = direction
-        if direction_prec == "N":
-            direction_disabled = "S"
-        elif direction_prec == "S":
-            direction_disabled = "N"
-        elif direction_prec == "O":
-            direction_disabled = "E"
+   
+    def test_prendre_objet(self):
+        p2=plateau.Plateau(self.plateau2)
+        res=plateau.prendre_objet(p2,(1,1))
+        self.assertEqual(res,const.VITAMINE,
+                         "La case (1,1) du plateau test2.txt contient une vitamine "+\
+                            "or vous retournez la valeur ["+str(res)+"]")
+        res=plateau.prendre_objet(p2,(1,1))
+        self.assertEqual(res,const.AUCUN,
+                        "Après avoir pris l'objet de la case (1,1) du plateau test2.txt "+\
+                        "il ne devrait plus y avoir d'objet or vous retournez la valeur "+str(res))
+        res=plateau.prendre_objet(p2,(8,1))
+        self.assertEqual(res,const.VALEUR,
+                         "La case (8,1) du plateau test2.txt contient "+const.VALEUR+\
+                            "or vous trouvez l'objet "+str(res))
+        res=plateau.prendre_objet(p2,(8,1))
+        self.assertEqual(plateau.prendre_objet(p2,(8,1)),const.AUCUN,
+                "Après avoir pris un objet en (8,1) cette case devrait être vide "+\
+                "or vous trouvez l'objet "+str(res))
+        
+    def verif_deplacement(self,plat,pos_d,pos_a,pacman,dir,present=True,passemuraille=False):
+        res=plateau.deplacer_pacman(plat,pacman,pos_d,dir,passemuraille)
+        self.assertEqual(res,pos_a,
+                         "Le déplacement du pacman "+pacman+" de la position "+str(pos_d)+\
+                         " en direction de "+dir+ " devrait retourner "+str(pos_a)+\
+                         " or votre fonction trouve "+str(res)
+                            )
+        if pos_a is None:
+            if present:
+                self.assertTrue(pacman in case.get_pacmans(plateau.get_case(plat,pos_d)),
+                            "Le déplacement du pacman "+str(pacman)+" de la position "+str(pos_d)+\
+                         " en direction de "+dir+ " n'ayant pas pu se faire "+\
+                         str(pacman) + " devrait toujours être en "+str(pos_d)+\
+                         " or dans votre implémentation il n'y est plus"
+                              )
         else:
-            direction_disabled = "O"
-        ens_direct = set(direct_possible)-set(direction_disabled)
-        for direct in ens_direct:
-            direction = direct
-        prochaine_pos = pos_arrivee(plateau,prochaine_pos,direction)
-    return res
- 
+            self.assertFalse(pacman in case.get_pacmans(plateau.get_case(plat,pos_d)),
+                            "Le déplacement du pacman "+str(pacman)+" de la position "+str(pos_d)+\
+                         " en direction de "+dir+ " a réussi"+\
+                         " or dans votre implémentation "+pacman+" est toujours dans cette case"
+                              )
+            self.assertTrue(pacman in case.get_pacmans(plateau.get_case(plat,pos_a)),
+                            "Le déplacement du pacman "+str(pacman)+" de la position "+str(pos_d)+\
+                         " en direction de "+dir+ " arrive en "+str(pos_d)+\
+                         " or dans votre implémentation "+pacman+" n'est pas dans cette case"
+                              )
 
-# A NE PAS DEMANDER
-def plateau_2_str(plateau):
-        res = str(get_nb_lignes(plateau))+";"+str(get_nb_colonnes(plateau))+"\n"
-        pacmans = []
-        fantomes = []
-        for lig in range(get_nb_lignes(plateau)):
-            ligne = ""
-            for col in range(get_nb_colonnes(plateau)):
-                la_case = get_case(plateau,(lig, col))
-                if case.est_mur(la_case):
-                    ligne += "#"
-                    les_pacmans = case.get_pacmans(la_case)
-                    for pac in les_pacmans:
-                        pacmans.append((pac, lig, col))
-                else:
-                    obj = case.get_objet(la_case)
-                    les_pacmans = case.get_pacmans(la_case)
-                    les_fantomes= case.get_fantomes(la_case)
-                    ligne += str(obj)
-                    for pac in les_pacmans:
-                        pacmans.append((pac, lig, col))
-                    for fantome in les_fantomes:
-                        fantomes.append((fantome,lig,col))
-            res += ligne+"\n"
-        res += str(len(pacmans))+'\n'
-        for pac, lig, col in pacmans:
-            res += str(pac)+";"+str(lig)+";"+str(col)+"\n"
-        res += str(len(fantomes))+"\n"
-        for fantome, lig, col in fantomes:
-            res += str(fantome)+";"+str(lig)+";"+str(col)+"\n"
-        return res
+    def test_deplacer_pacman(self):
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(1,1),(1,0),'A','O')
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(1,1),None,'A','E')
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(1,1),(2,1),'A','S')
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(1,1),None,'A','N')
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(1,2),None,'A','N',False)
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(1,2),None,'A','E',False)
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(8,6),(8,7),'C','E')
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(8,6),(8,5),'C','O')
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(8,6),(7,6),'C','N')
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(8,6),None,'C','S')
+        
+    def test_deplacer_pacman_passemuraille(self):
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(1,8),(1,7),'B','O',passemuraille=True)
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(1,8),(1,9),'B','E',passemuraille=True)
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(1,8),(0,8),'B','N',passemuraille=True)
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(1,8),(2,8),'B','S',passemuraille=True)
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(1,2),None,'B','N',False,passemuraille=True)
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(1,2),None,'B','E',False,passemuraille=True)
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(6,6),(6,7),'D','E',passemuraille=True)
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(6,6),(6,5),'D','O',passemuraille=True)
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(6,6),(5,6),'D','N',passemuraille=True)
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement(p2,(6,6),(7,6),'D','S',passemuraille=True)
 
+    def verif_deplacement_f(self,plat,pos_d,pos_a,fantome,dir,present=True):
+        res=plateau.deplacer_fantome(plat,fantome,pos_d,dir)
+        self.assertEqual(res,pos_a,
+                         "Le déplacement du fantome "+fantome+" de la position "+str(pos_d)+\
+                         " en direction de "+dir+ " devrait retourner "+str(pos_a)+\
+                         " or votre fonction trouve "+str(res)
+                            )
+        if pos_a is None:
+            if present:
+                self.assertTrue(fantome in case.get_fantomes(plateau.get_case(plat,pos_d)),
+                            "Le déplacement du fantome "+str(fantome)+" de la position "+str(pos_d)+\
+                         " en direction de "+dir+ " n'ayant pas pu se faire "+\
+                         str(fantome) + " devrait toujours être en "+str(pos_d)+\
+                         " or dans votre implémentation il n'y est plus"
+                              )
+        else:
+            self.assertFalse(fantome in case.get_fantomes(plateau.get_case(plat,pos_d)),
+                            "Le déplacement du fantome "+str(fantome)+" de la position "+str(pos_d)+\
+                         " en direction de "+dir+ " a réussi"+\
+                         " or dans votre implémentation "+fantome+" est toujours dans cette case"
+                              )
+            self.assertTrue(fantome in case.get_fantomes(plateau.get_case(plat,pos_a)),
+                            "Le déplacement du fantome "+str(fantome)+" de la position "+str(pos_d)+\
+                         " en direction de "+dir+ " arrive en "+str(pos_d)+\
+                         " or dans votre implémentation "+fantome+" n'est pas dans cette case"
+                              )
+
+    def test_deplacer_pacman(self):
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement_f(p2,(1,9),(1,8),'c','O')
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement_f(p2,(1,9),(1,0),'c','E')
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement_f(p2,(1,9),None,'c','S')
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement_f(p2,(1,9),None,'c','N')
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement_f(p2,(1,2),None,'c','N',False)
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement_f(p2,(1,2),None,'c','E',False)
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement_f(p2,(6,4),None,'d','E')
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement_f(p2,(6,4),None,'d','O')
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement_f(p2,(6,4),(5,4),'d','N')
+        p2=plateau.Plateau(self.plateau2)
+        self.verif_deplacement_f(p2,(6,4),(7,4),'d','S')
+
+    def test_directions_possibles(self):
+        p2=plateau.Plateau(self.plateau2)
+        attendus={(0,0):{"S"},(5,6):{"N","S","E","O"},(7,8):set(),
+                 (8,5):{'O','E'},(5,0):{'O','E'},(7,1):{"N","S"}}
+        for pos in attendus:
+            res=plateau.directions_possibles(p2,pos)
+            self.assertEqual(set(res),attendus[pos],
+                             "Sur le plateau test2.txt, l'ensemble des directions possibles à partir de "+\
+                                str(pos)+" est "+str(attendus[pos])+ " or votre fonction retourne "+
+                                str(res))
+        res=plateau.directions_possibles(p2,(3,2),True)
+        self.assertEqual(set(res),{"N","S","E","O"},
+                         "Sur le plateau test2.txt, l'ensemble des directions possibles à partir de "+\
+                                " (3,2) est NSEO or votre fonction retourne "+
+                                str(res))
+    def verif_distances(self,attendu, obtenu,cle):
+        attendu[cle].sort()
+        obtenu[cle].sort()
+        self.assertEqual(obtenu[cle],attendu[cle],
+                         "Les distances pour les "+cle)
+
+        self.assertEqual(res['objets'])
+    def test_analyse_plateau(self):
+        p2=plateau.Plateau(self.plateau2)
+        pos=(5,6)
+        dist=5
+        
+        attendus={'N':{'objets': [(2, '@'), (3, '!'), (3, '.'), (3, '.'), (4, '.'), (4, '.'), (4, '.'), (5, '.'), (5, '.'), (5, '.'), (5, '~')], 'pacmans': [(3, 'D'), (5, 'C')], 'fantomes': [(3, 'b'), (5, 'd')]},
+                  'S':{'objets': [(2, '@'), (3, '.'), (3, '.'), (3, '~'), (4, '.'), (4, '.'), (4, '.'), (5, '!'), (5, '.'), (5, '.')], 'pacmans': [(1, 'D'), (3, 'C')], 'fantomes': [(5, 'b'), (5, 'd')]},
+                  'E':{'objets': [(1, '.'), (2, '.'), (2, '@'), (3, '.'), (4, '.'), (5, '!'), (5, '.'), (5, '.'), (5, '~')], 'pacmans': [(3, 'D'), (5, 'C')], 'fantomes': [(5, 'b'), (5, 'd')]},
+                  'O':{'objets': [(1, '.'), (2, '@'), (2, '.'), (3, '.'), (3, '.'), (4, '.'), (4, '.'), (5, '!'), (5, '.'), (5, '~')], 'pacmans': [(3, 'D'), (5, 'C')], 'fantomes': [(3, 'd'), (5, 'b')]}
+        }
+        for dir in attendus:
+            res=plateau.analyse_plateau(p2,pos,dir,dist)
+            for cle in attendus[dir]:
+                attendus[dir][cle].sort()
+                res[cle].sort()
+                self.assertEqual(res[cle],attendus[dir][cle],
+                                 "Les distances à partir de la position "+str(pos)+\
+                                  " en allant vers "+dir+ " pour les "+cle+" ne sont pas correctes")
+        self.assertEqual(plateau.analyse_plateau(p2,(1,6),'N',5),None,
+                         "Le déplacement vers N à partir de (1,6) n'est pas possible or "+\
+                            "votre fonction retourne "+str(res)+ " au lieu de None")
+
+    def test_prochaine_intersection(self):
+        p2=plateau.Plateau(self.plateau2)
+        attendus={'N':1,'S':2,'E':4,'O':4}
+        pos=(5,6)
+        for dir in attendus:
+            res=plateau.prochaine_intersection(p2,pos,dir)
+            self.assertEqual(res,attendus[dir],
+                             "La prochaine intersection quand on part de "+\
+                                str(pos)+" en allant vers le "+dir+\
+                             " devrait être à une distance de "+str(attendus[dir])+\
+                             " or votre fonction retourne "+ str(res)  )
+
+        
+if __name__ == '__main__':
+    unittest.main()       
+        
