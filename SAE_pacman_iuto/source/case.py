@@ -62,7 +62,7 @@ def get_pacmans(case):
         set: l'ensemble des identifiants de pacmans présents sur la case.
     """
     res=set()
-    if case['pacmans_presents']!=None:
+    if case is not None and 'pacmans_presents' in case and case['pacmans_presents'] is not None:
         for pacmans in case['pacmans_presents']:
             res.add(pacmans)
     return res
@@ -77,7 +77,7 @@ def get_fantomes(case):
         set: l'ensemble des identifiants de fantomes présents su la case.
     """
     res=set()
-    if case['fantomes_presents']!=None:
+    if case is not None and 'fantomes_presents' in case and case['fantomes_presents'] is not None:
         for pacmans in case['fantomes_presents']:
             res.add(pacmans)
     return res
@@ -196,4 +196,3 @@ def prendre_fantome(case, fantome):
             case["fantomes_presents"].remove(fantome)
             return True
     return False
-    
