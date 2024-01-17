@@ -449,7 +449,7 @@ def directions_possibles(plateau,pos,passemuraille=False):
 #---------------------------------------------------------#
 
 
-def analyse_plateau(plateau, pos, direction, distance_max):
+def analyse_plateau(plateau, pos, direction, distance_max, passemuraille=False):
     """calcul les distances entre la position pos est les différents objets et
         joueurs du plateau si on commence par partir dans la direction indiquée
         en se limitant à la distance max. Si il n'est pas possible d'aller dans la
@@ -468,7 +468,7 @@ def analyse_plateau(plateau, pos, direction, distance_max):
             S'il n'est pas possible d'aller dans la direction indiquée à partir de pos
             la fonction retourne None
     """ 
-    if not direction in directions_possibles(plateau,pos,False):
+    if not direction in directions_possibles(plateau,pos,passemuraille):
         return None
     
     res = {'objets':[],'pacmans':[],'fantomes':[]}
@@ -498,7 +498,7 @@ def analyse_plateau(plateau, pos, direction, distance_max):
         pos_voisins = set()
 
         for pos_actuel in position:
-            for direction in directions_possibles(plateau,pos_actuel):
+            for direction in directions_possibles(plateau,pos_actuel,passemuraille):
                 voisin = pos_arrivee(plateau,pos_actuel,direction)
                 if voisin not in pos_parcouru:
                     pos_voisins.add(voisin)
@@ -519,10 +519,8 @@ def analyse_plateau(plateau, pos, direction, distance_max):
 
             for fantome in case.get_fantomes(case_actuelle):
                 res["fantomes"].append((inondation,fantome))
-            print(res)
         len_pos = len(position)
-        
-
+    
     return res
 
 
