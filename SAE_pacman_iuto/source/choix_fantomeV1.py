@@ -1,0 +1,44 @@
+
+import random
+import const
+import case
+import joueur
+import plateau
+import affichage
+
+
+def direction_j_fantome_pacman(le_plateau,lejoueur):
+    """renvoie la direction pour aller vers le pacman le plus proche
+
+    Args:
+        le_plateau (dict): le plateau de jeu
+        lejoueur (dict): le joueur actuel
+
+    Returns:
+        str: la direction choisie
+    """    
+    direction_possible = plateau.directions_possibles(le_plateau,joueur.get_pos_fantome(lejoueur))
+    dico_analyse = dict()
+    for direction in direction_possible:
+        dico_analyse[direction] = plateau.analyse_plateau(le_plateau,joueur.get_pos_fantome(lejoueur),direction,plateau.get_nb_lignes(le_plateau))
+
+    choix = min(dico_analyse,key=lambda direct: dico_analyse[direct]["pacmans"])
+
+    print(choix)
+    if choix is None:                   #Pour éviter tout plantage, si il y a un problème ça choisi au hasard
+        return random.choice("NESO") 
+    else:
+        return choix
+
+def test_direction_j_fantome():
+    with open("cartes/test1.txt") as fic:
+            plateau1=fic.read()
+    plateau1 = plateau.Plateau(plateau1)
+    E = plateau.analyse_plateau(plateau1,(7,5),"E",plateau.get_nb_lignes(plateau1))
+    print(plateau1)
+    print('ici',E)
+    O = plateau.analyse_plateau(plateau1,(7,5),"O",plateau.get_nb_lignes(plateau1))
+    print(O)
+    choix = min((E,O),key=lambda dir: dir["pacmans"])
+    print(choix)
+    
