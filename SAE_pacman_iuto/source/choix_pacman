@@ -1,0 +1,25 @@
+"""
+            SAE1.02 PACMAN IUT'O
+         BUT1 Informatique 2023-2024
+
+        Module jeu_IA.py
+        Ce module contient la définition et l'implémentation de l'IA.
+"""
+
+
+import const
+import case
+import joueur
+import plateau
+
+def deplacement_pacman_objet(le_plateau,Joueur):
+    analyse_direction={}
+    direct_possible=plateau.directions_possibles(le_plateau,joueur.get_pos_pacman(Joueur),joueur_passe_muraille(Joueur))
+    for dir in direct_possible:
+        analyse_direction[dir]=(plateau.analyse_plateau(le_plateau, joueur.get_pos_pacman(Joueur), dir, plateau.get_nb_lignes(le_plateau)))
+        print(analyse_direction)
+    choix=min(analyse_direction,key=lambda dir: analyse_direction[dir]['objets'])
+    return choix
+    
+def joueur_passe_muraille(Joueur):
+    return '~' in joueur.get_objets(Joueur)
