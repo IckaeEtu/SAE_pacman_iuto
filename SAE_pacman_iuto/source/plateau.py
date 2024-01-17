@@ -449,7 +449,7 @@ def directions_possibles(plateau,pos,passemuraille=False):
 #---------------------------------------------------------#
 
 
-def analyse_plateau(plateau, pos, direction, distance_max, passemuraille=False):
+def analyse_plateau(plateau, pos, direction, distance_max, passemuraille=False):                        #a été ajouté après le premier rendu
     """calcul les distances entre la position pos est les différents objets et
         joueurs du plateau si on commence par partir dans la direction indiquée
         en se limitant à la distance max. Si il n'est pas possible d'aller dans la
