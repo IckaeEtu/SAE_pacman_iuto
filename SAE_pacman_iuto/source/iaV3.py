@@ -161,5 +161,5 @@ def IA_pacman(le_plateau,le_joueur):
         return direction_pacman_glouton(le_plateau,le_joueur)
     else:
         
-        return pacman_normal(le_plateau,le_joueur)
+        return pacman_normal(le_joueur)
     
