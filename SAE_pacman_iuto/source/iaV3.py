@@ -1,82 +1,105 @@
 import random
-import const
-import case
 import joueur
 import plateau
-import affichage
 
 
-def direction_j_fantome_pacman(le_plateau,lejoueur):
+
+def direction_fantome_chasse(le_plateau,le_joueur):
     """renvoie la direction pour aller vers le pacman le plus proche
 
     Args:
         le_plateau (dict): le plateau de jeu
-        lejoueur (dict): le joueur actuel
+        le_joueur (dict): le joueur actuel
 
     Returns:
         str: la direction choisie
     """    
-    direction_possible = plateau.directions_possibles(le_plateau,joueur.get_pos_fantome(lejoueur))
+    direction_possible = plateau.directions_possibles(le_plateau,joueur.get_pos_fantome(le_joueur))
     dico_analyse = dict()
     for direction in direction_possible:
-        dico_analyse[direction] = plateau.analyse_plateau(le_plateau,joueur.get_pos_fantome(lejoueur),direction,plateau.get_nb_lignes(le_plateau))
+        dico_analyse[direction] = plateau.analyse_plateau(le_plateau,joueur.get_pos_fantome(le_joueur),direction,plateau.get_nb_lignes(le_plateau))
 
     choix = min(dico_analyse,key=lambda direct: dico_analyse[direct]["pacmans"])
 
-    if choix is None:                   #Pour éviter tout plantage, si il y a un problème ça choisi au hasard
+    if choix is None:                   #Pour éviter tout plantage, si il y a un problème ça choisi au hasard (peut être retiré)
         return random.choice("NESO") 
     else:
         return choix
 
     
-def deplacement_pacman_objet(le_plateau,Joueur):
-    analyse_direction={}
-    passemuraille = joueur_passe_muraille(Joueur)
-    direct_possible=plateau.directions_possibles(le_plateau,joueur.get_pos_pacman(Joueur),passemuraille)
-    for dir in direct_possible:
-        analyse_direction[dir]=(plateau.analyse_plateau(le_plateau, joueur.get_pos_pacman(Joueur), dir, plateau.get_nb_lignes(le_plateau),passemuraille))
-    choix=min(analyse_direction,key=lambda dir: analyse_direction[dir]['objets'])
-    return choix
-    
-def joueur_passe_muraille(Joueur):
-    return '~' in joueur.get_objets(Joueur)
-
-
-def pacman_glouton(le_plateau,lejoueur):
-    return joueur.get_duree(lejoueur,'$') > 2
-
-def direction_pacman_glouton(le_plateau,lejoueur):
-    """renvoie la direction pour aller vers le fantome le plus proche, quand le pacman est en mode glouton
+def direction_pacman_objet(le_plateau,le_joueur):
+    """donne la direction pour aller vers l'objet le plus proche
 
     Args:
-        le_plateau (dict): le plateau de jeu
-        lejoueur (dict): le joueur actuel
+        le_plateau (dict): le plateau de jeu actuel
+        le_joueur (dict): le joueur actuel
 
     Returns:
         str: la direction choisie
     """    
-    direction_possible = plateau.directions_possibles(le_plateau,joueur.get_pos_pacman(lejoueur))
+    analyse_direction={}
+    passemuraille = pacman_passe_muraille(le_joueur)
+    direct_possible=plateau.directions_possibles(le_plateau,joueur.get_pos_pacman(le_joueur),passemuraille)
+    for dir in direct_possible:
+        analyse_direction[dir]=(plateau.analyse_plateau(le_plateau, joueur.get_pos_pacman(le_joueur), dir, plateau.get_nb_lignes(le_plateau),passemuraille))
+    choix=min(analyse_direction,key=lambda dir: analyse_direction[dir]['objets'])
+    return choix
+    
+def pacman_passe_muraille(le_joueur):
+    """renvoie si le pacman du joueur a passe-muraille ou non
+
+    Args:
+        le_joueur (dict): le joueur actuel
+
+    Returns:
+        bool: True si le pacman du joueur a passe-muraille, False sinon
+    """    
+    return '~' in joueur.get_objets(le_joueur)
+
+
+def pacman_glouton(le_joueur):
+    """renvoie si le pacman du joueur a le mode glouton ou non
+
+    Args:
+        le_joueur (dict): le joueur actuel
+
+    Returns:
+        bool: True si le pacman du joueur a glouton, False sinon
+    """    
+    return joueur.get_duree(le_joueur,'$') > 2
+
+def direction_pacman_glouton(le_plateau,le_joueur):
+    """renvoie la direction pour aller vers le fantome le plus proche, quand le pacman est en mode glouton
+
+    Args:
+        le_plateau (dict): le plateau de jeu
+        le_joueur (dict): le joueur actuel
+
+    Returns:
+        str: la direction choisie
+    """    
+    direction_possible = plateau.directions_possibles(le_plateau,joueur.get_pos_pacman(le_joueur))
     dico_analyse = dict()
     for direction in direction_possible:
-        dico_analyse[direction] = plateau.analyse_plateau(le_plateau,joueur.get_pos_pacman(lejoueur),direction,plateau.get_nb_lignes(le_plateau))
+        dico_analyse[direction] = plateau.analyse_plateau(le_plateau,joueur.get_pos_pacman(le_joueur),direction,plateau.get_nb_lignes(le_plateau))
 
     choix = min(dico_analyse,key=lambda direct: dico_analyse[direct]["fantomes"])
 
-    if choix is None:                   #Pour éviter tout plantage, si il y a un problème ça choisi au hasard
+    if choix is None:                   #Pour éviter tout plantage, si il y a un problème ça choisi au hasard (peut être retiré)
         return random.choice(direction_possible) 
     else:
         return choix
 
-def direction_j_pacman_fantome(le_plateau, le_joueur):
-    """Définit en fonction de la position de mon pacman sur le plateau, quelle direction
+def direction_pacman_fugitif(le_plateau, le_joueur):
+    """Définit en fonction de la position du pacman du joueur sur le plateau, quelle direction
     prendre pour s’éloigner du fantôme le plus proche 
 
     Args:
         le_plateau (dict): Le plateau considéré
-        Joueur (dict): Un dictionnaire représentant le joueur
+        le_joueur (dict): Un dictionnaire représentant le joueur
 
     Returns:
-        (str): une chaine de caractères indiquant les directions possible 
+        (str): la direction choisie  
     """
     dir_pos = plateau.directions_possibles(le_plateau, joueur.get_pos_pacman(le_joueur))
     dico_analyse = dict()
@@ -100,14 +123,43 @@ def direction_j_pacman_fantome(le_plateau, le_joueur):
             direction = random.choice(dir_pos)
              
     return direction 
-    
-def danger_pacman(le_plateau,le_joueur):
-    
+
+
+def pacman_normal(le_plateau,le_joueur):
+    """ Choisi la direction à prendre pour le pacman entre la direction
+    pour aller vers le fantome le plus proche ou la direction pour aller vers l'objet le plus proche
+
+    Args:
+        le_plateau (dict): le plateau de jeu actuel
+        le_joueur (dict): un dictionnaire représentant un joueur
+
+    Returns:
+        str: la direction choisie
+    """    
+    direct=direction_pacman_objet(le_plateau,le_joueur)
+    direct_choisi=plateau.analyse_plateau(le_plateau, joueur.get_pos_pacman(le_joueur), direct, plateau.get_nb_lignes(le_plateau),pacman_passe_muraille(le_joueur))
+    for dist_fantome in direct_choisi['fantomes']:
+        if dist_fantome[0]<=2:
+            return direction_pacman_fugitif(le_plateau,le_joueur)
+    return direct
+            
+
+
+
 
 def IA_pacman(le_plateau,le_joueur):
+    """selon les objets, choisit le mode de décision entre glouton ou normal
+
+    Args:
+        le_plateau (dict): le plateau actuel
+        le_joueur (dict): un dictionnaire représentant un joueur
+
+    Returns:
+        _type_: _description_
+    """    
     if pacman_glouton(le_plateau,le_joueur):
         return direction_pacman_glouton(le_plateau,le_joueur)
     else:
         
-        return deplacement_pacman_objet(le_plateau,le_joueur)
+        return pacman_normal(le_plateau,le_joueur)
     
