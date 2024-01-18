@@ -19,6 +19,10 @@ def direction_fantome_chasse(le_plateau,le_joueur):
     for direction in direction_possible:
         dico_analyse[direction] = plateau.analyse_plateau(le_plateau,joueur.get_pos_fantome(le_joueur),direction,plateau.get_nb_lignes(le_plateau))
 
+    for direction in dico_analyse:
+        if len(dico_analyse[direction]["pacmans"]) > 0 and dico_analyse[direction]["pacmans"][0][1].lower() == joueur.get_couleur(le_joueur).lower():
+            dico_analyse[direction]["pacmans"].pop(0)
+
     choix = min(dico_analyse,key=lambda direct: dico_analyse[direct]["pacmans"])
 
     if choix is None:                   #Pour éviter tout plantage, si il y a un problème ça choisi au hasard (peut être retiré)
@@ -82,6 +86,10 @@ def direction_pacman_glouton(le_plateau,le_joueur):
     dico_analyse = dict()
     for direction in direction_possible:
         dico_analyse[direction] = plateau.analyse_plateau(le_plateau,joueur.get_pos_pacman(le_joueur),direction,plateau.get_nb_lignes(le_plateau))
+    
+    for direction in dico_analyse:
+        if len(dico_analyse[direction]["fantomes"]) > 0 and dico_analyse[direction]["fantomes"][0][1].lower() == joueur.get_couleur(le_joueur).lower():
+            dico_analyse[direction]["fantomes"].pop(0)
 
     choix = min(dico_analyse,key=lambda direct: dico_analyse[direct]["fantomes"])
 
@@ -157,9 +165,9 @@ def IA_pacman(le_plateau,le_joueur):
     Returns:
         _type_: _description_
     """    
-    if pacman_glouton(le_plateau,le_joueur):
+    if pacman_glouton(le_joueur):
         return direction_pacman_glouton(le_plateau,le_joueur)
     else:
         
-        return pacman_normal(le_joueur)
+        return pacman_normal(le_plateau,le_joueur)
     
